@@ -1,0 +1,133 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 10 10% 4%;
+    --foreground: 45 100% 85%;
+
+    --card: 16 16% 8%;
+    --card-foreground: 45 100% 85%;
+
+    --popover: 16 16% 8%;
+    --popover-foreground: 45 100% 85%;
+
+    --primary: 45 100% 51%;
+    --primary-foreground: 10 10% 4%;
+
+    --secondary: 16 16% 12%;
+    --secondary-foreground: 45 100% 85%;
+
+    --muted: 16 16% 12%;
+    --muted-foreground: 45 20% 65%;
+
+    --accent: 45 100% 51%;
+    --accent-foreground: 10 10% 4%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 16 16% 16%;
+    --input: 16 16% 16%;
+    --ring: 45 100% 51%;
+
+    --radius: 0.5rem;
+
+    --sidebar-background: 10 10% 4%;
+    --sidebar-foreground: 45 100% 85%;
+    --sidebar-primary: 45 100% 51%;
+    --sidebar-primary-foreground: 10 10% 4%;
+    --sidebar-accent: 16 16% 12%;
+    --sidebar-accent-foreground: 45 100% 85%;
+    --sidebar-border: 16 16% 16%;
+    --sidebar-ring: 45 100% 51%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-gym-black text-gym-gold-light font-sans;
+  }
+
+  .gradient-text {
+    @apply bg-gradient-to-r from-gym-gold to-gym-gold-light bg-clip-text text-transparent;
+  }
+
+  .gym-card {
+    @apply bg-gradient-to-br from-gym-gray to-gym-gray-light border border-gym-gold/20 backdrop-blur-sm;
+  }
+
+  .gym-button {
+    @apply bg-gradient-to-r from-gym-gold to-gym-gold-light text-gym-black font-semibold px-6 py-3 rounded-lg hover:from-gym-gold-light hover:to-gym-gold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl;
+  }
+
+  .gym-input {
+    @apply bg-gym-gray border border-gym-gold/30 text-gym-gold-light placeholder-gym-gold/50 focus:border-gym-gold focus:ring-1 focus:ring-gym-gold rounded-lg px-4 py-3 transition-all duration-300;
+  }
+
+  .status-active {
+    @apply bg-green-500/20 text-green-400 border border-green-500/30;
+  }
+
+  .status-expired {
+    @apply bg-red-500/20 text-red-400 border border-red-500/30;
+  }
+
+  .status-low-stock {
+    @apply bg-orange-500/20 text-orange-400 border border-orange-500/30;
+  }
+
+  .shimmer-effect {
+    background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.1), transparent);
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite;
+  }
+
+  .hover-lift {
+    @apply transition-all duration-300 hover:scale-105 hover:shadow-xl;
+  }
+
+  .glass-effect {
+    @apply bg-gym-gray/80 backdrop-blur-md border border-gym-gold/20;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1a1a1a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #d4af37;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #f4e4a6;
+}
+
+/* Loading animations */
+@keyframes pulse-gold {
+  0%, 100% {
+    opacity: 1;
+    background-color: rgba(212, 175, 55, 0.1);
+  }
+  50% {
+    opacity: 0.5;
+    background-color: rgba(212, 175, 55, 0.3);
+  }
+}
+
+.loading-pulse {
+  animation: pulse-gold 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
