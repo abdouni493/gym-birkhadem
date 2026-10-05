@@ -24,6 +24,8 @@ import {
 import { useSerialPort } from '@/hooks/useSerialPort';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from '@/lib/i18n';
+import { VoiceKey, preloadVoices } from '@/lib/accessVoice';
+import { FORWARDED_SCAN, announceScan } from '@/lib/customerDisplay';
 import { ShieldCheck, ShieldX, ShieldAlert, X, User, Calendar, Wifi, Clock } from 'lucide-react';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
@@ -41,7 +43,12 @@ type AccessResult = {
   daysLeft?: number;
   sessionsInfo?: SessionsInfo;
   uid: string;
+  /** Spoken message; defaults from `type` (granted → enter, warning → soon_expire, else not_enter). */
+  voice?: VoiceKey;
 };
+
+const defaultVoice = (type: AccessResult['type']): VoiceKey =>
+  type === 'granted' ? 'enter' : type === 'warning' ? 'soon_expire' : 'not_enter';
 
 // ── Component ──────────────────────────────────────────────────────────────────
 export const GlobalRfidListener: React.FC = () => {
@@ -70,6 +77,19 @@ export const GlobalRfidListener: React.FC = () => {
     setResult(res);
     setVisible(true);
     setAnimating(true);
+
+    // Spoken feedback + the customer-facing display screen.
+    announceScan({
+      status: res.type,
+      voice: res.voice ?? defaultVoice(res.type),
+      title: res.message,
+      detail: res.subMessage,
+      athlete: res.athlete,
+      daysLeft: res.daysLeft,
+      sessions: res.sessionsInfo
+        ? { remaining: res.sessionsInfo.remaining, total: res.sessionsInfo.total }
+        : null,
+    });
 
     // Auto-hide after 5 seconds
     hideTimerRef.current = setTimeout(() => {
@@ -180,6 +200,7 @@ export const GlobalRfidListener: React.FC = () => {
             message: t('rfid.noSessions'),
             subMessage: `${athlete.full_name} ${t('rfid.noSessionsDesc')}`,
             sessionsInfo: { remaining: 0, total: latestSubWithSessions.sessions, justUsed: false },
+            daysLeft,
           });
           processingRef.current = false;
           return;
@@ -206,6 +227,8 @@ export const GlobalRfidListener: React.FC = () => {
             message: t('rfid.alreadyToday'),
             subMessage: t('rfid.alreadyTodayDesc'),
             sessionsInfo: { remaining, total: latestSubWithSessions.sessions, justUsed: false },
+            daysLeft,
+            voice: 'enter', // courtesy entry — they are let in
           });
           
           // Courtesy access no longer opens the door in this build
@@ -247,6 +270,7 @@ export const GlobalRfidListener: React.FC = () => {
             message: t('rfid.lastSession'),
             subMessage: t('rfid.lastSessionDesc'),
             sessionsInfo,
+            daysLeft,
           });
           processingRef.current = false;
           return;
@@ -263,6 +287,7 @@ export const GlobalRfidListener: React.FC = () => {
           message: t('rfid.accessGranted'),
           subMessage: `${newRemaining}/${latestSubWithSessions.sessions} ${t('rfid.sessionsRemaining')}`,
           sessionsInfo,
+          daysLeft,
         });
         processingRef.current = false;
         return;
@@ -379,6 +404,21 @@ export const GlobalRfidListener: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKeyDown, true);
   }, [processUid]);
 
+  // ── Scans typed into the customer display window ─────────────────────────
+  // If the display popup has keyboard focus, the RFID reader types into it;
+  // it forwards the UID here so this window still does the processing.
+  useEffect(() => {
+    const onMessage = (e: MessageEvent) => {
+      if (e.origin !== window.location.origin) return;
+      const data = e.data as { type?: string; uid?: string } | null;
+      if (data?.type === FORWARDED_SCAN && typeof data.uid === 'string') processUid(data.uid);
+    };
+    window.addEventListener('message', onMessage);
+    return () => window.removeEventListener('message', onMessage);
+  }, [processUid]);
+
+  useEffect(() => { preloadVoices(); }, []);
+
   // ── Cleanup on unmount ───────────────────────────────────────────────────
   useEffect(() => {
     return () => {
@@ -493,8 +533,8 @@ export const GlobalRfidListener: React.FC = () => {
           <div className="px-6 pb-4">
             <div className="flex items-center gap-4 p-4 rounded-xl bg-white/5 border border-white/10">
               <div className="w-14 h-14 rounded-full bg-white/10 border border-white/20 flex items-center justify-center overflow-hidden flex-shrink-0">
-                {(result.athlete as any).photo ? (
-                  <img src={(result.athlete as any).photo} alt="photo" className="w-full h-full object-cover" />
+                {result.athlete.photo_url ? (
+                  <img src={result.athlete.photo_url} alt="photo" className="w-full h-full object-cover" />
                 ) : (
                   <User className="w-7 h-7 text-white/40" />
                 )}

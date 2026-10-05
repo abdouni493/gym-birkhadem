@@ -16,6 +16,7 @@ import { useTranslation } from '@/lib/i18n';
 import {
   Athlete, SeanceHistory, listAthletes, findAthleteByRfid, getSessionInfo, recordSeance,
 } from '@/lib/api/athletes';
+import { announceScan } from '@/lib/customerDisplay';
 import { describeError } from '@/lib/supabase';
 import { useSerialPort } from '@/hooks/useSerialPort';
 
@@ -65,6 +66,7 @@ export const Scanner: React.FC = () => {
     if (!found) {
       // ── Card not linked to any athlete ─────────────────────────────────
       setSelectedAthlete(null);
+      announceScan({ status: 'unknown', voice: 'not_enter', title: t('rfid.unknownCard'), detail: t('rfid.unknownDesc') });
       toast({
         title: '🚫 Unknown Card',
         description: `UID ${uid} is not linked to any athlete.`,
@@ -81,6 +83,8 @@ export const Scanner: React.FC = () => {
 
     if (!expiry) {
       // No subscription at all
+      announceScan({ status: 'denied', voice: 'not_enter', athlete: found, title: t('rfid.noSubscription'),
+        detail: `${found.full_name} ${t('rfid.noSubscriptionDesc')}` });
       toast({
         title: '🚫 Access denied — No subscription',
         description: `${found.full_name} has no active subscription.`,
@@ -94,6 +98,8 @@ export const Scanner: React.FC = () => {
 
     if (daysLeft < 0) {
       // ── Expired ────────────────────────────────────────────────────────
+      announceScan({ status: 'denied', voice: 'not_enter', athlete: found, title: t('rfid.expired'),
+        detail: `${t('rfid.expiredOn')} ${expiryDate.toLocaleDateString('fr-FR')}`, daysLeft: 0 });
       toast({
         title: '🚫 Access denied — Subscription expired',
         description: `${found.full_name} expired on ${expiryDate.toLocaleDateString('fr-FR')}.`,
@@ -111,7 +117,10 @@ export const Scanner: React.FC = () => {
       const history = sessionInfo.history;
       const remaining = sessionInfo.remaining;
 
+      const total = latestSubWithSessions.sessions;
       if (remaining <= 0) {
+        announceScan({ status: 'denied', voice: 'not_enter', athlete: found, title: t('rfid.noSessions'),
+          detail: `${found.full_name} ${t('rfid.noSessionsDesc')}`, sessions: { remaining: 0, total } });
         toast({
           title: '🚫 Access denied — No sessions left',
           description: `${found.full_name} has used all sessions.`,
@@ -132,6 +141,8 @@ export const Scanner: React.FC = () => {
 
       if (todaySession) {
         // ── Already used today → Allow access but don't deduct ─────────
+        announceScan({ status: 'warning', voice: 'enter', athlete: found, title: t('rfid.alreadyToday'),
+          detail: t('rfid.alreadyTodayDesc'), sessions: { remaining, total } });
         toast({
           title: '✅ Access granted (courtesy)',
           description: `${found.full_name} - Session already used today. Available again tomorrow.`,
@@ -159,11 +170,15 @@ export const Scanner: React.FC = () => {
 
       // Door-opening removed: only notify via UI/toast
       if (newRemaining === 0) {
+        announceScan({ status: 'warning', voice: 'soon_expire', athlete: found, title: t('rfid.lastSession'),
+          detail: t('rfid.lastSessionDesc'), sessions: { remaining: 0, total } });
         toast({
           title: '⚠️ Last session',
           description: `${found.full_name} - Renewal needed.`,
         });
       } else {
+        announceScan({ status: 'granted', voice: 'enter', athlete: found, title: t('rfid.accessGranted'),
+          detail: `${newRemaining}/${total} ${t('rfid.sessionsRemaining')}`, sessions: { remaining: newRemaining, total } });
         toast({
           title: '✅ Access recorded',
           description: `Welcome ${found.full_name} — ${newRemaining}/${latestSubWithSessions.sessions} sessions remaining.`,
@@ -176,17 +191,21 @@ export const Scanner: React.FC = () => {
     // Door-opening removed: only notify via toast
     console.log('Access granted (door-opening disabled) for', found.first_name);
     if (daysLeft <= 7) {
+      announceScan({ status: 'warning', voice: 'soon_expire', athlete: found, title: t('rfid.accessGranted'),
+        detail: `${t('rfid.expiringSoon')} — ${daysLeft} ${t('rfid.dayLeft')}`, daysLeft });
       toast({
         title: `⚠️ Expiring soon!`,
         description: `${found.full_name} — ${daysLeft} day(s) remaining.`,
       });
     } else {
+      announceScan({ status: 'granted', voice: 'enter', athlete: found, title: t('rfid.accessGranted'),
+        detail: `${daysLeft} ${t('rfid.daysRemaining')}`, daysLeft });
       toast({
         title: '✅ Access granted',
         description: `Welcome ${found.full_name} — ${daysLeft} days remaining.`,
       });
     }
-  }, [toast]);
+  }, [toast, t]);
 
   useEffect(() => {
     if (activeTab !== 'scanner') return;

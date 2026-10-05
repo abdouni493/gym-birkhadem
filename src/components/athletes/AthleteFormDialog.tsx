@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
 } from '@/components/ui/dialog';
@@ -7,12 +7,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
-  User, Plus, Camera, Trash2, CalendarCheck, Check, X, Settings2, CreditCard,
+  Plus, Trash2, CalendarCheck, Check, X, Settings2, CreditCard,
 } from 'lucide-react';
+import { PhotoPicker } from '@/components/common/PhotoPicker';
 import { toast } from '@/hooks/use-toast';
 import { formatDZD } from '@/lib/utils';
 import { describeError } from '@/lib/supabase';
-import { uploadImage } from '@/lib/storage';
+import { deleteByUrl, uploadImage } from '@/lib/storage';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from '@/lib/i18n';
 import {
@@ -52,7 +53,6 @@ export const AthleteFormDialog: React.FC<Props> = ({ isOpen, onClose, athlete, o
   const [preview, setPreview] = useState<string | null>(null);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [saving, setSaving] = useState(false);
-  const fileRef = useRef<HTMLInputElement>(null);
 
   // Inline subscription (create mode only)
   const [subTypes, setSubTypes] = useState<Subscription[]>([]);
@@ -111,11 +111,11 @@ export const AthleteFormDialog: React.FC<Props> = ({ isOpen, onClose, athlete, o
     if (selectedSub) setSubAmountPaid(String(selectedSub.price));
   }, [selectedSub]);
 
-  const onPickPhoto = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  // PhotoPicker hands over an already-optimised file (or null = remove photo).
+  const onPhotoChange = (file: File | null, url: string | null) => {
     setPhotoFile(file);
-    setPreview(URL.createObjectURL(file));
+    setPreview(url);
+    if (!file) set('photo_url', null);
   };
 
   const addSport = async () => {
@@ -154,12 +154,16 @@ export const AthleteFormDialog: React.FC<Props> = ({ isOpen, onClose, athlete, o
     try {
       let photoUrl = form.photo_url ?? null;
       if (photoFile) {
-        photoUrl = await uploadImage('athlete-photos', photoFile);
+        photoUrl = await uploadImage('athlete-photos', photoFile, '', { optimize: false });
       }
       const payload: AthleteInput = { ...form, photo_url: photoUrl };
 
       if (isEdit && athlete) {
         await updateAthlete(athlete.id, payload);
+        // Free the storage used by a replaced or removed photo.
+        if (athlete.photo_url && athlete.photo_url !== photoUrl) {
+          void deleteByUrl('athlete-photos', athlete.photo_url);
+        }
         toast({ title: t('athX.updated'), description: `${form.first_name} ${form.last_name}` });
       } else {
         const created = await createAthlete(payload);
@@ -212,25 +216,8 @@ export const AthleteFormDialog: React.FC<Props> = ({ isOpen, onClose, athlete, o
         </DialogHeader>
 
         <form onSubmit={submit} className="space-y-5">
-          {/* Photo */}
-          <div className="flex items-center gap-4">
-            <button
-              type="button"
-              onClick={() => fileRef.current?.click()}
-              className="relative w-20 h-20 rounded-full bg-gym-gold/10 ring-2 ring-gym-gold/30 flex items-center justify-center overflow-hidden group shrink-0 transition-transform hover:scale-105"
-            >
-              {preview
-                ? <img src={preview} alt="" className="w-full h-full object-cover" />
-                : <User className="w-8 h-8 text-gym-gold/50" />}
-              <span className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                <Camera className="w-5 h-5 text-white" />
-              </span>
-            </button>
-            <div className="text-xs text-gym-gold/50">
-              <p>{preview ? t('athX.photoChange') : t('athX.photoAdd')}</p>
-            </div>
-            <input ref={fileRef} type="file" accept="image/*" onChange={onPickPhoto} className="hidden" />
-          </div>
+          {/* Photo: webcam capture or upload, optimised before upload */}
+          <PhotoPicker preview={preview} onChange={onPhotoChange} t={t} />
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">

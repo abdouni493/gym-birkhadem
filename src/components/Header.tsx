@@ -2,9 +2,10 @@
 import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from '@/lib/i18n';
-import { Bell, Search, LogOut } from 'lucide-react';
+import { Bell, Search, LogOut, MonitorSmartphone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { launchCustomerDisplay } from '@/lib/customerDisplay';
 
 export const Header: React.FC = () => {
   const { user, logout, language } = useAuth();
@@ -24,6 +25,15 @@ export const Header: React.FC = () => {
         </div>
 
         <div className="flex items-center space-x-4">
+          {/* Customer display (second screen) */}
+          <button
+            onClick={() => launchCustomerDisplay(t)}
+            title={t('display.open')}
+            className="p-2 rounded-lg hover:bg-gym-gold/10 transition-colors"
+          >
+            <MonitorSmartphone className="w-5 h-5 text-gym-gold/60" />
+          </button>
+
           {/* Notifications */}
           <button className="relative p-2 rounded-lg hover:bg-gym-gold/10 transition-colors">
             <Bell className="w-5 h-5 text-gym-gold/60" />

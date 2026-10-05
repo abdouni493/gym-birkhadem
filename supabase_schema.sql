@@ -15,7 +15,8 @@
 --   6. Views (caisse / reports / outstanding)
 --   7. Row Level Security — one block per interface, matching src/lib/permissions.ts
 --   8. Storage buckets + policies (images)
---   9. Seed data
+--   9. Realtime — customer display on another device
+--  10. Seed data
 --
 -- Permission model
 --   worker_permissions rows:  (worker_id, interface_key, action_key)
@@ -1113,7 +1114,29 @@ create policy "gym staff delete" on storage.objects for delete to authenticated
 
 
 -- =============================================================================
--- 9. SEED DATA  (no admin here — create it with the login page button)
+-- 9. REALTIME — customer display on another device (src/lib/customerDisplay.ts)
+-- =============================================================================
+-- Scans are broadcast on the PRIVATE channel 'gym-customer-display'. Only
+-- signed-in staff may send or receive on it, so athlete names and photos never
+-- go out on a channel that anyone holding the public anon key could join.
+-- (A second monitor on the same computer doesn't use this at all.)
+
+drop policy if exists "gym display receive" on realtime.messages;
+drop policy if exists "gym display send"    on realtime.messages;
+
+create policy "gym display receive" on realtime.messages for select to authenticated
+  using (realtime.topic() = 'gym-customer-display'
+         and realtime.messages.extension = 'broadcast'
+         and public.is_staff());
+
+create policy "gym display send" on realtime.messages for insert to authenticated
+  with check (realtime.topic() = 'gym-customer-display'
+              and realtime.messages.extension = 'broadcast'
+              and public.is_staff());
+
+
+-- =============================================================================
+-- 10. SEED DATA  (no admin here — create it with the login page button)
 -- =============================================================================
 
 insert into public.store_settings (id, name, currency) values ('store', 'GYM', 'DZD')

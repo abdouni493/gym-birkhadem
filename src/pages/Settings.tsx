@@ -9,8 +9,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import {
   Settings as SettingsIcon, Store, User, Save, Upload, Eye, EyeOff, Globe,
-  Image as ImageIcon, Trash2, LogOut,
+  Image as ImageIcon, Trash2, LogOut, MonitorSmartphone,
 } from 'lucide-react';
+import { ScanDisplaySettings } from '@/components/settings/ScanDisplaySettings';
 import { toast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -125,6 +126,9 @@ export const Settings: React.FC = () => {
             <TabsTrigger value="account" className="data-[state=active]:bg-gym-gold data-[state=active]:text-gym-black text-gym-gold">
               <User className="w-4 h-4 mr-2" />Account
             </TabsTrigger>
+            <TabsTrigger value="scan" className="data-[state=active]:bg-gym-gold data-[state=active]:text-gym-black text-gym-gold">
+              <MonitorSmartphone className="w-4 h-4 mr-2" />{t('scanSettings.tab')}
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="store" className="mt-4">
@@ -220,6 +224,10 @@ export const Settings: React.FC = () => {
                 </Button>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="scan" className="mt-4">
+            <ScanDisplaySettings />
           </TabsContent>
         </Tabs>
       </div>

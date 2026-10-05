@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { Layout } from "@/components/Layout";
 import { RequirePermission } from "@/components/RequirePermission";
@@ -23,7 +23,9 @@ import { Caisse } from "@/pages/Caisse";
 import { Reports } from "@/pages/Reports";
 import { Settings } from "@/pages/Settings";
 import { Cards } from "@/pages/Cards";
+import { CustomerDisplay } from "@/pages/CustomerDisplay";
 import NotFound from "./pages/NotFound";
+import { nextPath } from "@/lib/utils";
 
 const queryClient = new QueryClient();
 
@@ -41,8 +43,12 @@ const LoadingScreen = () => (
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, isLoading } = useAuth();
+  const location = useLocation();
   if (isLoading) return <LoadingScreen />;
-  if (!user) return <Navigate to="/login" replace />;
+  if (!user) {
+    const next = location.pathname === "/dashboard" ? "" : `?next=${encodeURIComponent(location.pathname)}`;
+    return <Navigate to={`/login${next}`} replace />;
+  }
   return <>{children}</>;
 };
 
@@ -60,12 +66,13 @@ const Page = ({ interfaceKey, children }: { interfaceKey: string; children: Reac
 
 const AppRoutes = () => {
   const { user, isLoading } = useAuth();
+  const location = useLocation();
 
   if (isLoading) return <LoadingScreen />;
 
   return (
     <Routes>
-      <Route path="/login" element={user ? <Navigate to="/dashboard" replace /> : <Login />} />
+      <Route path="/login" element={user ? <Navigate to={nextPath(location.search)} replace /> : <Login />} />
       <Route path="/" element={<Navigate to={user ? "/dashboard" : "/login"} replace />} />
 
       <Route path="/dashboard"          element={<Page interfaceKey="dashboard"><Dashboard /></Page>} />
@@ -87,6 +94,9 @@ const AppRoutes = () => {
       <Route path="/reports"            element={<Page interfaceKey="reports"><Reports /></Page>} />
       <Route path="/settings"           element={<Page interfaceKey="settings"><Settings /></Page>} />
       <Route path="/cards"              element={<Page interfaceKey="cards"><Cards /></Page>} />
+
+      {/* Customer-facing screen: any signed-in staff account, no sidebar/header. */}
+      <Route path="/display"            element={<ProtectedRoute><CustomerDisplay /></ProtectedRoute>} />
 
       <Route path="*" element={<NotFound />} />
     </Routes>
