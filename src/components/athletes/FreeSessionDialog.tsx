@@ -17,6 +17,7 @@ import { describeError } from '@/lib/supabase';
 import {
   FreeSession, listFreeSessions, createFreeSession, deleteFreeSession, sessionName,
 } from '@/lib/api/freeSessions';
+import { tr } from '@/lib/i18n';
 
 interface AthleteOption {
   id: string;
@@ -68,7 +69,7 @@ export const FreeSessionDialog: React.FC<Props> = ({
     try {
       setHistory(await listFreeSessions());
     } catch (e) {
-      toast({ title: 'Could not load history', description: describeError(e), variant: 'destructive' });
+      toast({ title: tr('Impossible de charger l’historique', 'تعذر تحميل السجل'), description: describeError(e), variant: 'destructive' });
     } finally {
       setLoading(false);
     }
@@ -90,15 +91,15 @@ export const FreeSessionDialog: React.FC<Props> = ({
     e.preventDefault();
     const value = Number(price);
     if (!value || value <= 0) {
-      toast({ title: 'Set a price', description: 'The session price must be greater than zero.', variant: 'destructive' });
+      toast({ title: tr('Indiquez un prix', 'حدد السعر'), description: tr('Le prix de la séance doit être supérieur à zéro.', 'يجب أن يكون سعر الحصة أكبر من صفر.'), variant: 'destructive' });
       return;
     }
     if (who === 'member' && !athleteId) {
-      toast({ title: 'Select an athlete', variant: 'destructive' });
+      toast({ title: tr('Choisissez un athlète', 'اختر رياضيًا'), variant: 'destructive' });
       return;
     }
     if (who === 'passenger' && !passenger.trim()) {
-      toast({ title: 'Name the passager', description: 'Enter who trained.', variant: 'destructive' });
+      toast({ title: tr('Nommez le passager', 'أدخل اسم الزائر'), description: tr('Indiquez qui s’est entraîné.', 'حدد من تدرّب.'), variant: 'destructive' });
       return;
     }
 
@@ -112,12 +113,12 @@ export const FreeSessionDialog: React.FC<Props> = ({
         session_time: time,
         notes: null,
       });
-      toast({ title: 'Séance libre saved', description: `${formatDZD(value)} recorded.` });
+      toast({ title: tr('Séance libre enregistrée', 'تم حفظ الحصة الحرة'), description: tr(`${formatDZD(value)} enregistré.`, `تم تسجيل ${formatDZD(value)}.`) });
       setPrice(''); setPassenger(''); setAthleteId('');
       await load();
       onSaved?.();
     } catch (err) {
-      toast({ title: 'Could not save session', description: describeError(err), variant: 'destructive' });
+      toast({ title: tr('Impossible d’enregistrer la séance', 'تعذر حفظ الحصة'), description: describeError(err), variant: 'destructive' });
     } finally {
       setSaving(false);
     }
@@ -128,9 +129,9 @@ export const FreeSessionDialog: React.FC<Props> = ({
       await deleteFreeSession(id);
       await load();
       onSaved?.();
-      toast({ title: 'Session deleted' });
+      toast({ title: tr('Séance supprimée', 'تم حذف الحصة') });
     } catch (e) {
-      toast({ title: 'Could not delete', description: describeError(e), variant: 'destructive' });
+      toast({ title: tr('Suppression impossible', 'تعذر الحذف'), description: describeError(e), variant: 'destructive' });
     }
   };
 
@@ -143,10 +144,10 @@ export const FreeSessionDialog: React.FC<Props> = ({
       <DialogContent className="bg-gym-gray border-gym-gold/20 text-gym-gold max-w-lg max-h-[92vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 gradient-text">
-            <Zap className="w-5 h-5" />Séance libre
+            <Zap className="w-5 h-5" />{tr('Séance libre', 'حصة حرة')}
           </DialogTitle>
           <DialogDescription className="text-gym-gold/60">
-            Record a single paid session. Date and time are taken from the system.
+            {tr('Enregistrez une séance payée unique. La date et l’heure sont celles du système.', 'سجّل حصة مدفوعة واحدة. يُؤخذ التاريخ والوقت من النظام.')}
           </DialogDescription>
         </DialogHeader>
 
@@ -156,20 +157,20 @@ export const FreeSessionDialog: React.FC<Props> = ({
             <label className={cn('flex items-center gap-2 rounded-lg border p-2.5 cursor-pointer transition-colors',
               who === 'member' ? 'border-gym-gold/50 bg-gym-gold/10' : 'border-gym-gold/20')}>
               <RadioGroupItem value="member" className="border-gym-gold/50 text-gym-gold" />
-              <span className="text-sm">Member</span>
+              <span className="text-sm">{tr('Membre', 'عضو')}</span>
             </label>
             <label className={cn('flex items-center gap-2 rounded-lg border p-2.5 cursor-pointer transition-colors',
               who === 'passenger' ? 'border-gym-gold/50 bg-gym-gold/10' : 'border-gym-gold/20')}>
               <RadioGroupItem value="passenger" className="border-gym-gold/50 text-gym-gold" />
-              <span className="text-sm">Passager</span>
+              <span className="text-sm">{tr('Passager', 'زائر')}</span>
             </label>
           </RadioGroup>
 
           {who === 'member' ? (
             <div className="space-y-1.5">
-              <Label>Athlete *</Label>
+              <Label>{tr('Athlète', 'الرياضي')} *</Label>
               <Select value={athleteId} onValueChange={setAthleteId}>
-                <SelectTrigger className="gym-input"><SelectValue placeholder="Select an athlete" /></SelectTrigger>
+                <SelectTrigger className="gym-input"><SelectValue placeholder={tr('Choisissez un athlète', 'اختر رياضيًا')} /></SelectTrigger>
                 <SelectContent className="bg-gym-gray border-gym-gold/30 text-gym-gold max-h-60">
                   {athletes.map((a) => <SelectItem key={a.id} value={a.id}>{a.full_name}</SelectItem>)}
                 </SelectContent>
@@ -177,51 +178,51 @@ export const FreeSessionDialog: React.FC<Props> = ({
             </div>
           ) : (
             <div className="space-y-1.5">
-              <Label>Passager name *</Label>
+              <Label>{tr('Nom du passager', 'اسم الزائر')} *</Label>
               <Input value={passenger} onChange={(e) => setPassenger(e.target.value)}
-                     className="gym-input" placeholder="Walk-in name" />
+                     className="gym-input" placeholder={tr('Nom du passager', 'اسم الزائر')} />
             </div>
           )}
 
           <div className="grid grid-cols-3 gap-3">
             <div className="space-y-1.5">
-              <Label>Price *</Label>
+              <Label>{tr('Prix', 'السعر')} *</Label>
               <Input type="number" min="0" step="0.01" value={price}
                      onChange={(e) => setPrice(e.target.value)} className="gym-input" placeholder="500" />
             </div>
             <div className="space-y-1.5">
-              <Label>Date</Label>
+              <Label>{tr('Date', 'التاريخ')}</Label>
               <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="gym-input" />
             </div>
             <div className="space-y-1.5">
-              <Label>Hour</Label>
+              <Label>{tr('Heure', 'الوقت')}</Label>
               <Input type="time" value={time} onChange={(e) => setTime(e.target.value)} className="gym-input" />
             </div>
           </div>
 
           <Button type="submit" className="w-full gym-button" disabled={saving}>
-            <Plus className="w-4 h-4 mr-2" />{saving ? 'Saving…' : 'Save séance libre'}
+            <Plus className="w-4 h-4 me-2" />{saving ? tr('Enregistrement…', 'جارٍ الحفظ…') : tr('Enregistrer la séance libre', 'حفظ الحصة الحرة')}
           </Button>
         </form>
 
         <Separator className="bg-gym-gold/15" />
 
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-gym-gold/80">History</h3>
+          <h3 className="text-sm font-semibold text-gym-gold/80">{tr('Historique', 'السجل')}</h3>
           {todayTotal > 0 && (
             <Badge className="bg-green-500/20 text-green-300 border-0">
-              {formatDZD(todayTotal)} today
+              {formatDZD(todayTotal)} {tr('aujourd’hui', 'اليوم')}
             </Badge>
           )}
         </div>
 
         <ScrollArea className="max-h-[240px]">
           {loading ? (
-            <p className="text-sm text-gym-gold/40 py-6 text-center">Loading…</p>
+            <p className="text-sm text-gym-gold/40 py-6 text-center">{tr('Chargement…', 'جارٍ التحميل…')}</p>
           ) : history.length === 0 ? (
-            <p className="text-sm text-gym-gold/40 py-6 text-center">No free sessions yet.</p>
+            <p className="text-sm text-gym-gold/40 py-6 text-center">{tr('Aucune séance libre pour le moment.', 'لا توجد حصص حرة بعد.')}</p>
           ) : (
-            <div className="space-y-1.5 pr-2">
+            <div className="space-y-1.5 pe-2">
               {history.map((s) => (
                 <div key={s.id} className="flex items-center gap-3 p-2.5 rounded-lg border border-gym-gold/15">
                   <div className="w-7 h-7 rounded-full bg-gym-gold/15 flex items-center justify-center overflow-hidden shrink-0">
@@ -240,7 +241,7 @@ export const FreeSessionDialog: React.FC<Props> = ({
                   {canDelete && (
                     <Button size="icon" variant="ghost" onClick={() => remove(s.id)}
                             className="h-7 w-7 text-red-400 hover:bg-red-500/10 shrink-0"
-                            aria-label="Delete session">
+                            aria-label={tr('Supprimer la séance', 'حذف الحصة')}>
                       <Trash2 className="w-3.5 h-3.5" />
                     </Button>
                   )}

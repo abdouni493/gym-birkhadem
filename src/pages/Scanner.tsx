@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
-import { useTranslation } from '@/lib/i18n';
+import { useTranslation, tr } from '@/lib/i18n';
 import {
   Athlete, SeanceHistory, listAthletes, findAthleteByRfid, getSessionInfo, recordSeance,
 } from '@/lib/api/athletes';
@@ -68,8 +68,8 @@ export const Scanner: React.FC = () => {
       setSelectedAthlete(null);
       announceScan({ status: 'unknown', voice: 'not_enter', title: t('rfid.unknownCard'), detail: t('rfid.unknownDesc') });
       toast({
-        title: '🚫 Unknown Card',
-        description: `UID ${uid} is not linked to any athlete.`,
+        title: '🚫 ' + t('rfid.unknownCard'),
+        description: tr(`UID ${uid} : ${t('rfid.unknownDesc')}`, `UID ${uid}: ${t('rfid.unknownDesc')}`),
         variant: 'destructive',
       });
       return;
@@ -86,8 +86,8 @@ export const Scanner: React.FC = () => {
       announceScan({ status: 'denied', voice: 'not_enter', athlete: found, title: t('rfid.noSubscription'),
         detail: `${found.full_name} ${t('rfid.noSubscriptionDesc')}` });
       toast({
-        title: '🚫 Access denied — No subscription',
-        description: `${found.full_name} has no active subscription.`,
+        title: '🚫 ' + t('rfid.noSubscription'),
+        description: `${found.full_name} ${t('rfid.noSubscriptionDesc')}`,
         variant: 'destructive',
       });
       return;
@@ -99,10 +99,10 @@ export const Scanner: React.FC = () => {
     if (daysLeft < 0) {
       // ── Expired ────────────────────────────────────────────────────────
       announceScan({ status: 'denied', voice: 'not_enter', athlete: found, title: t('rfid.expired'),
-        detail: `${t('rfid.expiredOn')} ${expiryDate.toLocaleDateString('fr-FR')}`, daysLeft: 0 });
+        detail: `${t('rfid.expiredOn')} ${expiryDate.toLocaleDateString(language === 'ar' ? 'ar-DZ' : 'fr-FR')}`, daysLeft: 0 });
       toast({
-        title: '🚫 Access denied — Subscription expired',
-        description: `${found.full_name} expired on ${expiryDate.toLocaleDateString('fr-FR')}.`,
+        title: '🚫 ' + t('rfid.expired'),
+        description: `${found.full_name} — ${t('rfid.expiredOn')} ${expiryDate.toLocaleDateString(language === 'ar' ? 'ar-DZ' : 'fr-FR')}`,
         variant: 'destructive',
       });
       return;
@@ -122,8 +122,8 @@ export const Scanner: React.FC = () => {
         announceScan({ status: 'denied', voice: 'not_enter', athlete: found, title: t('rfid.noSessions'),
           detail: `${found.full_name} ${t('rfid.noSessionsDesc')}`, sessions: { remaining: 0, total } });
         toast({
-          title: '🚫 Access denied — No sessions left',
-          description: `${found.full_name} has used all sessions.`,
+          title: '🚫 ' + t('rfid.noSessions'),
+          description: `${found.full_name} ${t('rfid.noSessionsDesc')}`,
           variant: 'destructive',
         });
         return;
@@ -144,8 +144,8 @@ export const Scanner: React.FC = () => {
         announceScan({ status: 'warning', voice: 'enter', athlete: found, title: t('rfid.alreadyToday'),
           detail: t('rfid.alreadyTodayDesc'), sessions: { remaining, total } });
         toast({
-          title: '✅ Access granted (courtesy)',
-          description: `${found.full_name} - Session already used today. Available again tomorrow.`,
+          title: '✅ ' + t('rfid.alreadyToday'),
+          description: `${found.full_name} — ${t('rfid.alreadyTodayDesc')}`,
         });
         
         // Still open the door
@@ -173,15 +173,15 @@ export const Scanner: React.FC = () => {
         announceScan({ status: 'warning', voice: 'soon_expire', athlete: found, title: t('rfid.lastSession'),
           detail: t('rfid.lastSessionDesc'), sessions: { remaining: 0, total } });
         toast({
-          title: '⚠️ Last session',
-          description: `${found.full_name} - Renewal needed.`,
+          title: '⚠️ ' + t('rfid.lastSession'),
+          description: `${found.full_name} — ${t('rfid.lastSessionDesc')}`,
         });
       } else {
         announceScan({ status: 'granted', voice: 'enter', athlete: found, title: t('rfid.accessGranted'),
           detail: `${newRemaining}/${total} ${t('rfid.sessionsRemaining')}`, sessions: { remaining: newRemaining, total } });
         toast({
-          title: '✅ Access recorded',
-          description: `Welcome ${found.full_name} — ${newRemaining}/${latestSubWithSessions.sessions} sessions remaining.`,
+          title: '✅ ' + t('rfid.accessGranted'),
+          description: `${found.full_name} — ${newRemaining}/${latestSubWithSessions.sessions} ${t('rfid.sessionsRemaining')}`,
         });
       }
       return;
@@ -194,15 +194,15 @@ export const Scanner: React.FC = () => {
       announceScan({ status: 'warning', voice: 'soon_expire', athlete: found, title: t('rfid.accessGranted'),
         detail: `${t('rfid.expiringSoon')} — ${daysLeft} ${t('rfid.dayLeft')}`, daysLeft });
       toast({
-        title: `⚠️ Expiring soon!`,
-        description: `${found.full_name} — ${daysLeft} day(s) remaining.`,
+        title: '⚠️ ' + t('rfid.expiringSoon'),
+        description: `${found.full_name} — ${daysLeft} ${t('rfid.daysRemaining')}`,
       });
     } else {
       announceScan({ status: 'granted', voice: 'enter', athlete: found, title: t('rfid.accessGranted'),
         detail: `${daysLeft} ${t('rfid.daysRemaining')}`, daysLeft });
       toast({
-        title: '✅ Access granted',
-        description: `Welcome ${found.full_name} — ${daysLeft} days remaining.`,
+        title: '✅ ' + t('rfid.accessGranted'),
+        description: `${found.full_name} — ${daysLeft} ${t('rfid.daysRemaining')}`,
       });
     }
   }, [toast, t]);
@@ -211,7 +211,7 @@ export const Scanner: React.FC = () => {
     if (activeTab !== 'scanner') return;
     if (scanMode === 'rfid') {
       startContinuous(handleRfidUid).catch((err) => {
-        toast({ title: 'RFID Error', description: err.message, variant: 'destructive' });
+        toast({ title: tr('Erreur RFID', 'خطأ RFID'), description: err.message, variant: 'destructive' });
       });
     } else {
       stopContinuous();
@@ -241,7 +241,7 @@ export const Scanner: React.FC = () => {
       setSelectedAthlete(athlete);
       toast({
         title: t('common.success'),
-        description: `${athlete.full_name} ${t('scanner.foundSuccess') || 'loaded successfully'}`,
+        description: `${athlete.full_name} ${t('scanner.foundSuccess')}`,
       });
     } else {
       toast({
@@ -275,7 +275,7 @@ export const Scanner: React.FC = () => {
         setSeancesHistory(info.history);
         setSeancesRemaining(info.remaining);
       } catch (error) {
-        console.error('Failed to load seances info', error);
+        console.error(tr('Impossible de charger les séances', 'تعذر تحميل الحصص'), error);
       }
     };
 
@@ -293,7 +293,7 @@ export const Scanner: React.FC = () => {
     if (seancesRemaining <= 0) {
       toast({
         title: t('common.error'),
-        description: t('athletes.noSeancesRemaining') || 'No seances remaining',
+        description: t('athletes.noSeancesRemaining') || tr('Aucune séance restante', 'لا توجد حصص متبقية'),
         variant: 'destructive',
       });
       return;
@@ -311,13 +311,13 @@ export const Scanner: React.FC = () => {
 
       toast({
         title: t('common.success'),
-        description: t('scanner.seanceUsedSuccess') || 'Seance used successfully',
+        description: t('scanner.seanceUsedSuccess') || tr('Séance utilisée avec succès', 'تم استخدام الحصة بنجاح'),
       });
     } catch (error) {
-      console.error('Failed to use seance', error);
+      console.error(tr('Impossible d’utiliser la séance', 'تعذر استخدام الحصة'), error);
       toast({
         title: t('common.error'),
-        description: t('scanner.seanceUseFailed') || 'Failed to use seance',
+        description: t('scanner.seanceUseFailed') || tr('Impossible d’utiliser la séance', 'تعذر استخدام الحصة'),
         variant: 'destructive',
       });
     }
@@ -464,16 +464,16 @@ export const Scanner: React.FC = () => {
               <p>{t('scanner.cardDetails')}</p>
             </div>
             <div class="card-info" style="display:flex;gap:12px;align-items:center">
-              ${imageSrc ? `<div style="width:100px;height:100px;border-radius:8px;overflow:hidden"><img src="${imageSrc}" style="width:100%;height:100%;object-fit:cover"/></div>` : `<div style="width:100px;height:100px;border-radius:8px;overflow:hidden;background:#2a2a2a;display:flex;align-items:center;justify-content:center;color:#bfa85a">No Image</div>`}
+              ${imageSrc ? `<div style="width:100px;height:100px;border-radius:8px;overflow:hidden"><img src="${imageSrc}" style="width:100%;height:100%;object-fit:cover"/></div>` : `<div style="width:100px;height:100px;border-radius:8px;overflow:hidden;background:#2a2a2a;display:flex;align-items:center;justify-content:center;color:#bfa85a">{tr('Pas d’image', 'لا توجد صورة')}</div>`}
               <div>
                 <h3>${athlete.full_name}</h3>
                 <div class="card-info-grid" style="margin-top:8px;">
                   <div>
-                    <label>ID:</label>
+                    <label>{tr('ID :', 'المعرف:')}</label>
                     <span>${athlete.id}</span>
                   </div>
                   <div>
-                    <label>Téléphone:</label>
+                    <label>{tr('Téléphone :', 'الهاتف:')}</label>
                     <span>${athlete.phone || 'N/A'}</span>
                   </div>
                 </div>
@@ -498,7 +498,7 @@ export const Scanner: React.FC = () => {
     }
 
     toast({
-      title: t('pos.printingInProgress') || 'Printing in progress',
+      title: t('pos.printingInProgress') || tr('Impression en cours', 'جارٍ الطباعة'),
       description: `${t('scanner.cardGeneratedSuccess')?.replace('{name}', `${athlete.full_name}`) || `Membership card for ${athlete.full_name} sent to printer`}`,
     });
   };
@@ -561,8 +561,8 @@ export const Scanner: React.FC = () => {
         ctx.font = '14px Arial';
         ctx.fillStyle = '#A89968';
         const infos = [
-          { label: 'ID:', value: athlete.id },
-          { label: 'Téléphone:', value: athlete.phone || 'N/A' }
+          { label: tr('ID :', 'المعرف:'), value: athlete.id },
+          { label: tr('Téléphone :', 'الهاتف:'), value: athlete.phone || 'N/A' }
         ];
 
         let y = 230;
@@ -685,12 +685,8 @@ export const Scanner: React.FC = () => {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="bg-gym-gray border border-gym-gold/20">
             <TabsTrigger value="scanner" className="data-[state=active]:bg-gym-gold data-[state=active]:text-gym-black">
-              <Scan className="w-4 h-4 mr-2" />
+              <Scan className="w-4 h-4 me-2" />
               {t('scanner.title')}
-            </TabsTrigger>
-            <TabsTrigger value="create" className="data-[state=active]:bg-gym-gold data-[state=active]:text-gym-black">
-              <CreditCard className="w-4 h-4 mr-2" />
-              {t('scanner.generateCards')}
             </TabsTrigger>
           </TabsList>
 
@@ -720,7 +716,7 @@ export const Scanner: React.FC = () => {
                         scanMode === 'manual' ? 'bg-gym-gold text-gym-black' : 'text-gym-gold/60 hover:text-gym-gold'
                       }`}
                     >
-                      <Search className="w-4 h-4" />Manual entry
+                      <Search className="w-4 h-4" />{tr('Saisie manuelle', 'إدخال يدوي')}
                     </button>
                     <button
                       type="button"
@@ -729,7 +725,7 @@ export const Scanner: React.FC = () => {
                         scanMode === 'rfid' ? 'bg-gym-gold text-gym-black' : 'text-gym-gold/60 hover:text-gym-gold'
                       }`}
                     >
-                      <Wifi className="w-4 h-4" />RFID reader
+                      <Wifi className="w-4 h-4" />{tr('Lecteur RFID', 'قارئ RFID')}
                     </button>
                   </div>
 
@@ -771,16 +767,16 @@ export const Scanner: React.FC = () => {
                               <Wifi className="w-6 h-6 text-gym-gold" />
                             </div>
                           </div>
-                          <p className="text-gym-gold animate-pulse text-sm">RFID reader active — place card on reader</p>
-                          {rfidLastUid && <p className="text-gym-gold/50 font-mono text-xs">Last UID: {rfidLastUid}</p>}
+                          <p className="text-gym-gold animate-pulse text-sm">{tr('Lecteur RFID actif — posez la carte sur le lecteur', 'قارئ RFID نشط — ضع البطاقة على القارئ')}</p>
+                          {rfidLastUid && <p className="text-gym-gold/50 font-mono text-xs">{tr('Dernier UID', 'آخر UID')} : {rfidLastUid}</p>}
                         </>
                       ) : (
                         <>
                           <WifiOff className="w-10 h-10 text-gym-gold/30" />
-                          <p className="text-gym-gold/60 text-sm">RFID reader not connected</p>
+                          <p className="text-gym-gold/60 text-sm">{tr('Lecteur RFID non connecté', 'قارئ RFID غير متصل')}</p>
                           {serialError && <p className="text-red-400 text-xs text-center px-4">{serialError}</p>}
                           <Button onClick={() => startContinuous(handleRfidUid)} className="gym-button">
-                            <RefreshCw className="w-4 h-4 mr-2" />Reconnect
+                            <RefreshCw className="w-4 h-4 me-2" />{tr('Reconnecter', 'إعادة الاتصال')}
                           </Button>
                         </>
                       )}
@@ -794,7 +790,7 @@ export const Scanner: React.FC = () => {
                 <CardHeader>
                   <CardTitle className="text-gym-gold flex items-center gap-2">
                     <User className="w-5 h-5" />
-                    Informations de l'Athlète
+                    {tr('Informations de l’athlète', 'معلومات الرياضي')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -818,23 +814,23 @@ export const Scanner: React.FC = () => {
                         {(() => {
                           const exp = selectedAthlete.subscription_expiry;
                           const today = new Date();
-                          if (!exp) return <Badge className="bg-gray-500/20 text-gray-400 border-gray-500/30">No subscription</Badge>;
+                          if (!exp) return <Badge className="bg-gray-500/20 text-gray-400 border-gray-500/30">{tr('Aucun abonnement', 'لا يوجد اشتراك')}</Badge>;
                           const expDate = new Date(exp);
                           const daysLeft = Math.ceil((expDate.getTime() - today.getTime()) / 86400000);
-                          if (daysLeft < 0) return <Badge className="bg-red-500/20 text-red-400 border border-red-500/30">Expired — {expDate.toLocaleDateString('fr-FR')}</Badge>;
-                          if (daysLeft <= 7) return <Badge className="bg-orange-500/20 text-orange-400 border border-orange-500/30">Expiring soon — {daysLeft}d left</Badge>;
-                          return <Badge className="bg-green-500/20 text-green-400 border border-green-500/30">Active — {daysLeft}d left</Badge>;
+                          if (daysLeft < 0) return <Badge className="bg-red-500/20 text-red-400 border border-red-500/30">{tr('Expiré', 'منتهي')} — {expDate.toLocaleDateString(language === 'ar' ? 'ar-DZ' : 'fr-FR')}</Badge>;
+                          if (daysLeft <= 7) return <Badge className="bg-orange-500/20 text-orange-400 border border-orange-500/30">{tr('Expire bientôt', 'ينتهي قريبًا')} — {daysLeft} {tr('j restants', 'يوم متبقٍ')}</Badge>;
+                          return <Badge className="bg-green-500/20 text-green-400 border border-green-500/30">{tr('Actif', 'نشط')} — {daysLeft} {tr('j restants', 'يوم متبقٍ')}</Badge>;
                         })()}
                       </div>
 
                       {/* Info grid */}
                       <div className="grid grid-cols-2 gap-3 text-sm">
-                        <div><span className="text-gym-gold/50 text-xs">Date of birth:</span><p className="text-gym-gold">{selectedAthlete.date_of_birth || '—'}</p></div>
-                        <div><span className="text-gym-gold/50 text-xs">Phone:</span><p className="text-gym-gold">{selectedAthlete.phone || '—'}</p></div>
-                        <div><span className="text-gym-gold/50 text-xs">Last payment:</span><p className="text-gym-gold">{selectedAthlete.last_payment ? new Date(selectedAthlete.last_payment).toLocaleDateString('fr-FR') : '—'}</p></div>
-                        <div><span className="text-gym-gold/50 text-xs">Expires:</span><p className="text-gym-gold">{selectedAthlete.subscription_expiry ? new Date(selectedAthlete.subscription_expiry).toLocaleDateString('fr-FR') : '—'}</p></div>
+                        <div><span className="text-gym-gold/50 text-xs">{tr('Date de naissance :', 'تاريخ الميلاد:')}</span><p className="text-gym-gold">{selectedAthlete.date_of_birth || '—'}</p></div>
+                        <div><span className="text-gym-gold/50 text-xs">{tr('Téléphone :', 'الهاتف:')}</span><p className="text-gym-gold">{selectedAthlete.phone || '—'}</p></div>
+                        <div><span className="text-gym-gold/50 text-xs">{tr('Dernier paiement :', 'آخر دفع:')}</span><p className="text-gym-gold">{selectedAthlete.last_payment ? new Date(selectedAthlete.last_payment).toLocaleDateString('fr-FR') : '—'}</p></div>
+                        <div><span className="text-gym-gold/50 text-xs">{tr('Expire le :', 'ينتهي في:')}</span><p className="text-gym-gold">{selectedAthlete.subscription_expiry ? new Date(selectedAthlete.subscription_expiry).toLocaleDateString('fr-FR') : '—'}</p></div>
                         {seancesRemaining !== null && (
-                          <div><span className="text-gym-gold/50 text-xs">Sessions left:</span><p className={seancesRemaining === 0 ? 'text-red-400 font-bold' : 'text-green-400 font-bold'}>{seancesRemaining}</p></div>
+                          <div><span className="text-gym-gold/50 text-xs">{tr('Séances restantes :', 'الحصص المتبقية:')}</span><p className={seancesRemaining === 0 ? 'text-red-400 font-bold' : 'text-green-400 font-bold'}>{seancesRemaining}</p></div>
                         )}
                       </div>
 
@@ -862,32 +858,32 @@ export const Scanner: React.FC = () => {
 
                       {/* Informations d'Adhésion */}
                       <div className="bg-gym-black/50 p-4 rounded-lg space-y-2">
-                        <h4 className="font-semibold text-gym-gold">Détails de l'Adhésion</h4>
+                        <h4 className="font-semibold text-gym-gold">{tr('Détails de l’adhésion', 'تفاصيل الاشتراك')}</h4>
                         <div className="grid grid-cols-2 gap-4 text-sm">
                           <div>
-                            <span className="text-gym-gold/60">Type:</span>
+                            <span className="text-gym-gold/60">{tr('Type :', 'النوع:')}</span>
                             <p className="text-gym-gold font-medium">{selectedAthlete.subscription_status || 'N/A'}</p>
                           </div>
                           <div>
-                            <span className="text-gym-gold/60">Expire le:</span>
+                            <span className="text-gym-gold/60">{tr('Expire le :', 'ينتهي في:')}</span>
                             <p className="text-gym-gold font-medium">{selectedAthlete.subscription_expiry ? new Date(selectedAthlete.subscription_expiry).toLocaleDateString('fr-FR') : 'N/A'}</p>
                           </div>
                           <div>
-                            <span className="text-gym-gold/60">Jours restants:</span>
+                            <span className="text-gym-gold/60">{tr('Jours restants :', 'الأيام المتبقية:')}</span>
                             <p className={`font-medium ${calculateDaysLeft(selectedAthlete.subscription_expiry) < 7 ? 'text-red-400' : calculateDaysLeft(selectedAthlete.subscription_expiry) > 0 ? 'text-green-400' : 'text-gray-400'}`}>
                               {calculateDaysLeft(selectedAthlete.subscription_expiry)} jours
                             </p>
                           </div>
                           {seancesRemaining !== null && (
                             <div>
-                              <span className="text-gym-gold/60">Séances restantes:</span>
+                              <span className="text-gym-gold/60">{tr('Séances restantes :', 'الحصص المتبقية:')}</span>
                               <p className={`font-medium ${seancesRemaining === 0 ? 'text-red-400' : 'text-green-400'}`}>
                                 {seancesRemaining}
                               </p>
                             </div>
                           )}
                           <div>
-                            <span className="text-gym-gold/60">Inscription:</span>
+                            <span className="text-gym-gold/60">{tr('Inscription :', 'التسجيل:')}</span>
                             <p className="text-gym-gold font-medium">{selectedAthlete.last_payment ? new Date(selectedAthlete.last_payment).toLocaleDateString('fr-FR') : 'N/A'}</p>
                           </div>
                         </div>
@@ -899,12 +895,12 @@ export const Scanner: React.FC = () => {
                               disabled={seancesRemaining <= 0}
                               className="gym-button"
                             >
-                              <Clock className="w-4 h-4 mr-2" />
-                              {t('scanner.useSeance') || 'Use Seance'}
+                              <Clock className="w-4 h-4 me-2" />
+                              {t('scanner.useSeance') || tr('Utiliser une séance', 'استخدام حصة')}
                             </Button>
 
                             {seancesRemaining === 0 && (
-                              <p className="text-sm text-red-400">{t('athletes.noSeancesRemaining') || 'No seances remaining'}</p>
+                              <p className="text-sm text-red-400">{t('athletes.noSeancesRemaining') || tr('Aucune séance restante', 'لا توجد حصص متبقية')}</p>
                             )}
                           </div>
                         )}
@@ -913,7 +909,7 @@ export const Scanner: React.FC = () => {
                   ) : (
                     <div className="text-center py-8 text-gym-gold/60">
                       <User className="w-16 h-16 mx-auto mb-4 opacity-30" />
-                      <p>Scannez une carte pour afficher les informations de l'athlète</p>
+                      <p>{tr('Scannez une carte pour afficher les informations de l’athlète', 'امسح بطاقة لعرض معلومات الرياضي')}</p>
                     </div>
                   )}
                 </CardContent>
@@ -921,164 +917,6 @@ export const Scanner: React.FC = () => {
             </div>
           </TabsContent>
 
-          {/* Onglet Créer des Cartes */}
-          <TabsContent value="create" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Recherche d'Athlètes */}
-              <Card className="bg-gym-gray border-gym-gold/20 animate-fade-in">
-                <CardHeader>
-                  <CardTitle className="text-gym-gold flex items-center gap-2">
-                    <Search className="w-5 h-5" />
-                    Rechercher des Athlètes
-                  </CardTitle>
-                  <CardDescription className="text-gym-gold/60">
-                    {t('scanner.findAthleteToCreateCard') || 'Find an athlete to create their membership card'}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <Input
-                    placeholder="Rechercher par nom, email ou ID..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="bg-gym-black border-gym-gold/30 text-gym-gold"
-                  />
-
-                  <div className="space-y-2 max-h-96 overflow-y-auto">
-                    {filteredAthletes.map((athlete) => (
-                      <div
-                        key={athlete.id}
-                        className={`p-3 border rounded-lg cursor-pointer transition-colors ${
-                          selectedAthlete?.id === athlete.id
-                            ? 'border-gym-gold bg-gym-gold/10'
-                            : 'border-gym-gold/20 hover:border-gym-gold/40 hover:bg-gym-gold/5'
-                        }`}
-                        onClick={() => setSelectedAthlete(athlete)}
-                      >
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="font-medium text-gym-gold">
-                              {athlete.full_name}
-                            </p>
-                            <p className="text-sm text-gym-gold/60">{athlete.email}</p>
-                            <p className="text-xs text-gym-gold/40">ID: {athlete.id}</p>
-                          </div>
-                          {getStatusBadge(athlete.subscription_status, athlete.subscription_expiry)}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Aperçu et Génération de Carte */}
-              <Card className="bg-gym-gray border-gym-gold/20 animate-fade-in">
-                <CardHeader>
-                  <CardTitle className="text-gym-gold flex items-center gap-2">
-                    <CreditCard className="w-5 h-5" />
-                    {t('scanner.preview') || 'Card Preview'}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {selectedAthlete ? (
-                    <div className="space-y-4">
-                      {/* Aperçu de la Carte */}
-                      <div className="bg-gradient-to-r from-gym-black to-gym-gray border border-gym-gold/30 rounded-lg p-6 shadow-lg relative">
-                        {/* En-tête de la Carte */}
-                        <div className="text-center mb-4 border-b border-gym-gold/20 pb-4">
-                          <h2 className="text-2xl font-bold gradient-text">GYM</h2>
-                          <p className="text-gym-gold/60 text-sm">{t('scanner.cardDetails')}</p>
-                        </div>
-
-                        {/* Informations du Membre (with image left) */}
-                        <div className="space-y-3 mb-4">
-                          <div className="flex items-center gap-4">
-                            <div className="w-20 h-20 rounded-md overflow-hidden border border-gym-gold/30 bg-gym-gold/5 flex-shrink-0">
-                              {imageSrc ? (
-                                <img src={imageSrc} alt="athlete" className="w-full h-full object-cover" />
-                              ) : (
-                                <div className="w-full h-full flex items-center justify-center text-gym-gold/40">No Image</div>
-                              )}
-                            </div>
-                            <div className="flex-1">
-                              <h3 className="text-lg font-bold text-gym-gold">
-                                {selectedAthlete.full_name}
-                              </h3>
-                              <div className="grid grid-cols-2 gap-2 text-sm mt-1">
-                                <div>
-                                  <span className="text-gym-gold/60">ID:</span>
-                                  <p className="text-gym-gold font-mono text-xs">{selectedAthlete.id}</p>
-                                </div>
-                                <div>
-                                  <span className="text-gym-gold/60">Téléphone:</span>
-                                  <p className="text-gym-gold text-xs">{selectedAthlete.phone || 'N/A'}</p>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Zone Code-barres */}
-                        <div className="bg-white p-4 rounded text-center mb-3">
-                          <div className="font-mono text-black text-lg font-bold tracking-widest mb-2">
-                            {generateBarcode(selectedAthlete.id)}
-                          </div>
-                          <p className="text-xs text-gray-600">{selectedAthlete.id}</p>
-                        </div>
-
-                        {/* image is rendered inline with member info above */}
-
-                        {/* Pied de Carte */}
-                        <div className="text-center mt-4 pt-4 border-t border-gym-gold/20">
-                          <p className="text-xs text-gym-gold/40">
-                            Généré le: {new Date().toLocaleDateString('fr-FR')}
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Boutons d'Action */}
-                      <div>
-                        <input ref={hiddenFileRef} type="file" accept="image/*" onChange={handleFile} className="hidden" />
-                      </div>
-                      <div className="grid grid-cols-4 gap-2">
-                        <Button type="button" onClick={openFilePicker} variant="outline" className="border-gym-gold/30 text-gym-gold hover:bg-gym-gold/10">
-                          <UserPlus className="w-4 h-4 mr-1" />
-                          Ajouter image
-                        </Button>
-                        <Button 
-                          onClick={() => generateCard(selectedAthlete)}
-                          className="bg-gym-gold text-gym-black hover:bg-gym-gold/90"
-                        >
-                          <Download className="w-4 h-4 mr-1" />
-                          Générer
-                        </Button>
-                        <Button 
-                          onClick={() => printCard(selectedAthlete)}
-                          variant="outline"
-                          className="border-gym-gold/30 text-gym-gold hover:bg-gym-gold/10"
-                        >
-                          <Printer className="w-4 h-4 mr-1" />
-                          Imprimer
-                        </Button>
-                        <Button 
-                          onClick={() => downloadCard(selectedAthlete)}
-                          variant="outline"
-                          className="border-gym-gold/30 text-gym-gold hover:bg-gym-gold/10"
-                        >
-                          <Download className="w-4 h-4 mr-1" />
-                          PDF
-                        </Button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="text-center py-12 text-gym-gold/60">
-                      <CreditCard className="w-16 h-16 mx-auto mb-4 opacity-30" />
-                      <p>{t('scanner.selectAthleteToPreview') || 'Select an athlete to preview their membership card'}</p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
         </Tabs>
       </div>
     </div>

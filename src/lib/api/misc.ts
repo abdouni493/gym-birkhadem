@@ -31,7 +31,7 @@ export async function saveStoreSettings(input: Partial<StoreSettingsRow>): Promi
 /** Update the signed-in worker's own name (row where user_id = auth.uid()). */
 export async function updateOwnProfile(input: { first_name: string; last_name: string }): Promise<void> {
   const { data: auth } = await supabase.auth.getUser();
-  if (!auth.user) throw new Error('Not signed in.');
+  if (!auth.user) throw new Error('Non connecté.');
   const { error } = await supabase
     .from('workers')
     .update({ first_name: input.first_name, last_name: input.last_name })
@@ -52,6 +52,11 @@ export async function updateOwnPassword(newPassword: string): Promise<void> {
 
 // ---- Expenses -------------------------------------------------------------
 
+export interface ExpenseCategory {
+  id: string;
+  name: string;
+}
+
 export interface Expense {
   id: string;
   name: string;
@@ -59,43 +64,67 @@ export interface Expense {
   expense_date: string;
   notes: string | null;
   receipt_url: string | null;
+  category_id: string | null;
+  expense_categories?: ExpenseCategory | null;
 }
 
-export async function listExpenses(): Promise<Expense[]> {
-  const { data, error } = await supabase
+export interface ExpenseInput {
+  name: string;
+  amount: number;
+  expense_date: string;
+  notes?: string | null;
+  category_id?: string | null;
+}
+
+export async function listExpenses(range?: { from: string; to: string }): Promise<Expense[]> {
+  let q = supabase
     .from('expenses')
-    .select('id, name, amount, expense_date, notes, receipt_url')
+    .select('id, name, amount, expense_date, notes, receipt_url, category_id, expense_categories ( id, name )')
     .order('expense_date', { ascending: false });
+  if (range) q = q.gte('expense_date', range.from).lte('expense_date', range.to);
+  const { data, error } = await q;
   if (error) throw error;
-  return (data ?? []) as Expense[];
+  return (data ?? []) as unknown as Expense[];
 }
 
-export async function createExpense(input: {
-  name: string; amount: number; expense_date: string; notes?: string | null;
-}): Promise<void> {
-  const { error } = await supabase.from('expenses').insert({
-    name: input.name.trim(),
-    amount: input.amount,
-    expense_date: input.expense_date,
-    notes: input.notes?.trim() || null,
-  });
+const expensePayload = (input: ExpenseInput) => ({
+  name: input.name.trim(),
+  amount: input.amount,
+  expense_date: input.expense_date,
+  notes: input.notes?.trim() || null,
+  category_id: input.category_id || null,
+});
+
+export async function createExpense(input: ExpenseInput): Promise<void> {
+  const { error } = await supabase.from('expenses').insert(expensePayload(input));
   if (error) throw error;
 }
 
-export async function updateExpense(id: string, input: {
-  name: string; amount: number; expense_date: string; notes?: string | null;
-}): Promise<void> {
-  const { error } = await supabase.from('expenses').update({
-    name: input.name.trim(),
-    amount: input.amount,
-    expense_date: input.expense_date,
-    notes: input.notes?.trim() || null,
-  }).eq('id', id);
+export async function updateExpense(id: string, input: ExpenseInput): Promise<void> {
+  const { error } = await supabase.from('expenses').update(expensePayload(input)).eq('id', id);
   if (error) throw error;
 }
 
 export async function deleteExpense(id: string): Promise<void> {
   const { error } = await supabase.from('expenses').delete().eq('id', id);
+  if (error) throw error;
+}
+
+export async function listExpenseCategories(): Promise<ExpenseCategory[]> {
+  const { data, error } = await supabase.from('expense_categories').select('id, name').order('name');
+  if (error) throw error;
+  return (data ?? []) as ExpenseCategory[];
+}
+
+export async function createExpenseCategory(name: string): Promise<ExpenseCategory> {
+  const { data, error } = await supabase.from('expense_categories')
+    .insert({ name: name.trim() }).select('id, name').single();
+  if (error) throw error;
+  return data as ExpenseCategory;
+}
+
+export async function deleteExpenseCategory(id: string): Promise<void> {
+  const { error } = await supabase.from('expense_categories').delete().eq('id', id);
   if (error) throw error;
 }
 

@@ -15,6 +15,7 @@ import { formatDZD } from '@/lib/utils';
 import { describeError } from '@/lib/supabase';
 import { Worker, listAbsences, addAbsence, deleteAbsence } from '@/lib/api/workers';
 import type { AbsenceRow } from '@/lib/workerPay';
+import { tr } from '@/lib/i18n';
 
 interface Props {
   isOpen: boolean;
@@ -41,7 +42,7 @@ export const AbsenceDialog: React.FC<Props> = ({ isOpen, onClose, worker, onChan
     try {
       setRows(await listAbsences(worker.id));
     } catch (e) {
-      toast({ title: 'Could not load absences', description: describeError(e), variant: 'destructive' });
+      toast({ title: tr('Impossible de charger les absences', 'تعذر تحميل الغيابات'), description: describeError(e), variant: 'destructive' });
     } finally {
       setLoading(false);
     }
@@ -61,19 +62,19 @@ export const AbsenceDialog: React.FC<Props> = ({ isOpen, onClose, worker, onChan
     // A zero-cost absence is legitimate: recorded, but nothing is deducted.
     const value = Number(cost) || 0;
     if (value < 0) {
-      toast({ title: 'Invalid cost', description: 'The cost cannot be negative.', variant: 'destructive' });
+      toast({ title: tr('Coût invalide', 'تكلفة غير صالحة'), description: tr('Le coût ne peut pas être négatif.', 'لا يمكن أن تكون التكلفة سالبة.'), variant: 'destructive' });
       return;
     }
 
     setBusy(true);
     try {
       await addAbsence(worker.id, { absence_date: date, description: desc || null, cost: value });
-      toast({ title: 'Absence recorded', description: value > 0 ? `${formatDZD(value)} will be deducted.` : 'No cost deducted.' });
+      toast({ title: tr('Absence enregistrée', 'تم تسجيل الغياب'), description: value > 0 ? `${formatDZD(value)} will be deducted.` : tr('Aucun coût déduit.', 'لا توجد تكلفة مخصومة.') });
       setCost(''); setDesc('');
       await load();
       onChanged?.();
     } catch (err) {
-      toast({ title: 'Could not record absence', description: describeError(err), variant: 'destructive' });
+      toast({ title: tr('Impossible d’enregistrer l’absence', 'تعذر تسجيل الغياب'), description: describeError(err), variant: 'destructive' });
     } finally {
       setBusy(false);
     }
@@ -82,8 +83,8 @@ export const AbsenceDialog: React.FC<Props> = ({ isOpen, onClose, worker, onChan
   const remove = async (row: AbsenceRow) => {
     if (row.settled_payment_id) {
       toast({
-        title: 'Already settled',
-        description: 'This absence was deducted by a payment. Delete that payment first.',
+        title: tr('Déjà réglé', 'تمت تسويته'),
+        description: tr('Cette absence a été déduite par un paiement. Supprimez d’abord ce paiement.', 'تم خصم هذا الغياب في دفعة. احذف تلك الدفعة أولاً.'),
         variant: 'destructive',
       });
       return;
@@ -92,9 +93,9 @@ export const AbsenceDialog: React.FC<Props> = ({ isOpen, onClose, worker, onChan
       await deleteAbsence(row.id);
       await load();
       onChanged?.();
-      toast({ title: 'Absence deleted' });
+      toast({ title: tr('Absence supprimée', 'تم حذف الغياب') });
     } catch (e) {
-      toast({ title: 'Could not delete', description: describeError(e), variant: 'destructive' });
+      toast({ title: tr('Suppression impossible', 'تعذر الحذف'), description: describeError(e), variant: 'destructive' });
     }
   };
 
@@ -106,64 +107,64 @@ export const AbsenceDialog: React.FC<Props> = ({ isOpen, onClose, worker, onChan
       <DialogContent className="bg-gym-gray border-gym-gold/20 text-gym-gold max-w-lg max-h-[92vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 gradient-text">
-            <CalendarX className="w-5 h-5" />Absence — {worker?.full_name}
+            <CalendarX className="w-5 h-5" />{tr('Absence', 'غياب')} — {worker?.full_name}
           </DialogTitle>
           <DialogDescription className="text-gym-gold/60">
-            Absence costs not yet deducted are subtracted from the next payment.
+            {tr('Les coûts d’absence non déduits sont retirés du prochain paiement.', 'تُخصم تكاليف الغياب غير المخصومة من الدفعة القادمة.')}
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={submit} className="space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label>Date *</Label>
+              <Label>{tr('Date', 'التاريخ')} *</Label>
               <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="gym-input" />
             </div>
             <div className="space-y-1.5">
-              <Label>Cost (DZD)</Label>
+              <Label>{tr('Coût (DA)', 'التكلفة (دج)')}</Label>
               <Input type="number" min="0" step="0.01" value={cost}
                      onChange={(e) => setCost(e.target.value)} className="gym-input" placeholder="0" />
             </div>
           </div>
           <div className="space-y-1.5">
-            <Label>Description</Label>
+            <Label>{tr('Description', 'الوصف')}</Label>
             <Textarea value={desc} onChange={(e) => setDesc(e.target.value)}
-                      className="gym-input min-h-[60px]" placeholder="Reason for the absence…" />
+                      className="gym-input min-h-[60px]" placeholder={tr('Motif de l’absence…', 'سبب الغياب…')} />
           </div>
           <Button type="submit" className="w-full gym-button" disabled={busy}>
-            <Plus className="w-4 h-4 mr-2" />{busy ? 'Saving…' : 'Add absence'}
+            <Plus className="w-4 h-4 me-2" />{busy ? tr('Enregistrement…', 'جارٍ الحفظ…') : tr('Ajouter une absence', 'إضافة غياب')}
           </Button>
         </form>
 
         <Separator className="bg-gym-gold/15" />
 
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-gym-gold/80">History</h3>
+          <h3 className="text-sm font-semibold text-gym-gold/80">{tr('Historique', 'السجل')}</h3>
           {pendingTotal > 0 && (
             <Badge className="bg-amber-500/20 text-amber-300 border-0">
-              {formatDZD(pendingTotal)} pending
+              {formatDZD(pendingTotal)} {tr('en attente', 'معلق')}
             </Badge>
           )}
         </div>
 
         <ScrollArea className="max-h-[240px]">
           {loading ? (
-            <p className="text-sm text-gym-gold/40 py-6 text-center">Loading…</p>
+            <p className="text-sm text-gym-gold/40 py-6 text-center">{tr('Chargement…', 'جارٍ التحميل…')}</p>
           ) : rows.length === 0 ? (
-            <p className="text-sm text-gym-gold/40 py-6 text-center">No absences recorded.</p>
+            <p className="text-sm text-gym-gold/40 py-6 text-center">{tr('Aucune absence enregistrée.', 'لا توجد غيابات مسجلة.')}</p>
           ) : (
-            <div className="space-y-2 pr-2">
+            <div className="space-y-2 pe-2">
               {rows.map((r) => (
                 <div key={r.id} className="flex items-start gap-3 p-2.5 rounded-lg border border-gym-gold/15">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <span className="font-semibold text-gym-gold">
-                        {Number(r.cost) > 0 ? formatDZD(r.cost) : 'No cost'}
+                        {Number(r.cost) > 0 ? formatDZD(r.cost) : tr('Sans coût', 'بدون تكلفة')}
                       </span>
                       {r.settled_payment_id
-                        ? <Badge variant="outline" className="border-green-500/40 text-green-400 text-[10px] h-4">settled</Badge>
+                        ? <Badge variant="outline" className="border-green-500/40 text-green-400 text-[10px] h-4">{tr('réglé', 'مسدد')}</Badge>
                         : Number(r.cost) > 0 &&
-                          <Badge variant="outline" className="border-amber-500/40 text-amber-300 text-[10px] h-4">pending</Badge>}
+                          <Badge variant="outline" className="border-amber-500/40 text-amber-300 text-[10px] h-4">{tr('en attente', 'معلق')}</Badge>}
                     </div>
                     <p className="text-xs text-gym-gold/50">{r.absence_date}</p>
                     {r.description && <p className="text-xs text-gym-gold/60 mt-0.5 break-words">{r.description}</p>}
@@ -171,7 +172,7 @@ export const AbsenceDialog: React.FC<Props> = ({ isOpen, onClose, worker, onChan
                   {canDelete && !r.settled_payment_id && (
                     <Button size="icon" variant="ghost" onClick={() => remove(r)}
                             className="h-7 w-7 text-red-400 hover:bg-red-500/10 shrink-0"
-                            aria-label="Delete absence">
+                            aria-label={tr('Supprimer l’absence', 'حذف الغياب')}>
                       <Trash2 className="w-3.5 h-3.5" />
                     </Button>
                   )}

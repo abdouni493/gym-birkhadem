@@ -16,6 +16,7 @@ import {
   Product, ProductInput, Brand, Category,
   createProduct, updateProduct, listBrands, listCategories, createBrand, createCategory,
 } from '@/lib/api/products';
+import { tr } from '@/lib/i18n';
 
 interface Props {
   open: boolean;
@@ -49,7 +50,7 @@ export const ProductFormDialog: React.FC<Props> = ({ open, onOpenChange, product
 
   useEffect(() => {
     if (!open) return;
-    loadLists().catch((e) => toast({ title: 'Could not load lists', description: describeError(e), variant: 'destructive' }));
+    loadLists().catch((e) => toast({ title: tr('Impossible de charger les listes', 'تعذر تحميل القوائم'), description: describeError(e), variant: 'destructive' }));
     if (product) {
       setForm({
         name: product.name || '',
@@ -81,7 +82,7 @@ export const ProductFormDialog: React.FC<Props> = ({ open, onOpenChange, product
       update('brand_id', b.id);
       setNewBrand(''); setAddingBrand(false);
     } catch (e) {
-      toast({ title: 'Could not add brand', description: describeError(e), variant: 'destructive' });
+      toast({ title: tr('Impossible d’ajouter la marque', 'تعذر إضافة العلامة'), description: describeError(e), variant: 'destructive' });
     }
   };
 
@@ -94,13 +95,13 @@ export const ProductFormDialog: React.FC<Props> = ({ open, onOpenChange, product
       update('category_id', c.id);
       setNewCategory(''); setAddingCategory(false);
     } catch (e) {
-      toast({ title: 'Could not add category', description: describeError(e), variant: 'destructive' });
+      toast({ title: tr('Impossible d’ajouter la catégorie', 'تعذر إضافة الفئة'), description: describeError(e), variant: 'destructive' });
     }
   };
 
   const submit = async () => {
     if (!form.name.trim()) {
-      toast({ title: 'Name required', variant: 'destructive' });
+      toast({ title: tr('Nom obligatoire', 'الاسم مطلوب'), variant: 'destructive' });
       return;
     }
     setSaving(true);
@@ -121,7 +122,7 @@ export const ProductFormDialog: React.FC<Props> = ({ open, onOpenChange, product
           expiry_date: form.expiryDate || null,
         };
         await updateProduct(product.id, payload);
-        toast({ title: 'Product updated' });
+        toast({ title: tr('Produit modifié', 'تم تعديل المنتج') });
       } else {
         const startStock = form.currentStock !== '' ? Number(form.currentStock) : 0;
         const payload: ProductInput = {
@@ -135,12 +136,12 @@ export const ProductFormDialog: React.FC<Props> = ({ open, onOpenChange, product
           min_stock_level: 5,
         };
         await createProduct(payload);
-        toast({ title: 'Product created' });
+        toast({ title: tr('Produit créé', 'تم إنشاء المنتج') });
       }
       onSaved?.();
       onOpenChange(false);
     } catch (e) {
-      toast({ title: 'Could not save product', description: describeError(e), variant: 'destructive' });
+      toast({ title: tr('Impossible d’enregistrer le produit', 'تعذر حفظ المنتج'), description: describeError(e), variant: 'destructive' });
     } finally {
       setSaving(false);
     }
@@ -150,31 +151,31 @@ export const ProductFormDialog: React.FC<Props> = ({ open, onOpenChange, product
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[92vh] overflow-y-auto bg-gym-gray border-gym-gold/30 text-gym-gold">
         <DialogHeader>
-          <DialogTitle className="gradient-text text-xl">{isEdit ? 'Edit product' : 'New product'}</DialogTitle>
-          <DialogDescription className="text-gym-gold/60">Product details.</DialogDescription>
+          <DialogTitle className="gradient-text text-xl">{isEdit ? tr('Modifier le produit', 'تعديل المنتج') : tr('Nouveau produit', 'منتج جديد')}</DialogTitle>
+          <DialogDescription className="text-gym-gold/60">{tr('Détails du produit.', 'تفاصيل المنتج.')}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-2">
           <div>
-            <Label>Name *</Label>
+            <Label>{tr('Nom', 'الاسم')} *</Label>
             <Input value={form.name} onChange={(e) => update('name', e.target.value)} className="gym-input mt-1" />
           </div>
           <div>
-            <Label>Description</Label>
+            <Label>{tr('Description', 'الوصف')}</Label>
             <Textarea value={form.description} onChange={(e) => update('description', e.target.value)} className="gym-input mt-1" rows={2} />
           </div>
 
           <div>
-            <Label>Barcode</Label>
+            <Label>{tr('Code-barres', 'الباركود')}</Label>
             <div className="flex gap-2 mt-1">
               <Input value={form.barcode} onChange={(e) => update('barcode', e.target.value)} className="gym-input" placeholder="—" />
               <Button type="button" variant="outline" onClick={() => update('barcode', generateBarcodeValue())}
-                      className="border-gym-gold/30 text-gym-gold hover:bg-gym-gold/10" title="Generate">
+                      className="border-gym-gold/30 text-gym-gold hover:bg-gym-gold/10" title={tr('Générer', 'توليد')}>
                 <BarcodeIcon className="w-4 h-4" />
               </Button>
               <Button type="button" variant="outline"
                       onClick={() => printBarcodes([{ name: form.name, barcode: form.barcode || generateBarcodeValue() }])}
-                      className="border-gym-gold/30 text-gym-gold hover:bg-gym-gold/10" title="Print">
+                      className="border-gym-gold/30 text-gym-gold hover:bg-gym-gold/10" title={tr('Imprimer', 'طباعة')}>
                 <Printer className="w-4 h-4" />
               </Button>
             </div>
@@ -183,10 +184,10 @@ export const ProductFormDialog: React.FC<Props> = ({ open, onOpenChange, product
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label>Brand</Label>
+              <Label>{tr('Marque', 'العلامة')}</Label>
               <div className="flex gap-2 mt-1">
                 <Select value={form.brand_id} onValueChange={(v) => update('brand_id', v)}>
-                  <SelectTrigger className="gym-input"><SelectValue placeholder="Select brand" /></SelectTrigger>
+                  <SelectTrigger className="gym-input"><SelectValue placeholder={tr('Choisir une marque', 'اختر علامة')} /></SelectTrigger>
                   <SelectContent className="bg-gym-gray border-gym-gold/30 text-gym-gold">
                     {brands.map((b) => <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>)}
                   </SelectContent>
@@ -196,7 +197,7 @@ export const ProductFormDialog: React.FC<Props> = ({ open, onOpenChange, product
               </div>
               {addingBrand && (
                 <div className="flex gap-2 mt-2">
-                  <Input value={newBrand} onChange={(e) => setNewBrand(e.target.value)} className="gym-input" placeholder="New brand"
+                  <Input value={newBrand} onChange={(e) => setNewBrand(e.target.value)} className="gym-input" placeholder={tr('Nouvelle marque', 'علامة جديدة')}
                          onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddBrand(); } }} />
                   <Button type="button" onClick={handleAddBrand} className="gym-button px-3"><Check className="w-4 h-4" /></Button>
                   <Button type="button" variant="ghost" onClick={() => setAddingBrand(false)} className="text-gym-gold px-3"><X className="w-4 h-4" /></Button>
@@ -205,10 +206,10 @@ export const ProductFormDialog: React.FC<Props> = ({ open, onOpenChange, product
             </div>
 
             <div>
-              <Label>Category</Label>
+              <Label>{tr('Catégorie', 'الفئة')}</Label>
               <div className="flex gap-2 mt-1">
                 <Select value={form.category_id} onValueChange={(v) => update('category_id', v)}>
-                  <SelectTrigger className="gym-input"><SelectValue placeholder="Select category" /></SelectTrigger>
+                  <SelectTrigger className="gym-input"><SelectValue placeholder={tr('Choisir une catégorie', 'اختر فئة')} /></SelectTrigger>
                   <SelectContent className="bg-gym-gray border-gym-gold/30 text-gym-gold">
                     {categories.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
                   </SelectContent>
@@ -218,7 +219,7 @@ export const ProductFormDialog: React.FC<Props> = ({ open, onOpenChange, product
               </div>
               {addingCategory && (
                 <div className="flex gap-2 mt-2">
-                  <Input value={newCategory} onChange={(e) => setNewCategory(e.target.value)} className="gym-input" placeholder="New category"
+                  <Input value={newCategory} onChange={(e) => setNewCategory(e.target.value)} className="gym-input" placeholder={tr('Nouvelle catégorie', 'فئة جديدة')}
                          onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddCategory(); } }} />
                   <Button type="button" onClick={handleAddCategory} className="gym-button px-3"><Check className="w-4 h-4" /></Button>
                   <Button type="button" variant="ghost" onClick={() => setAddingCategory(false)} className="text-gym-gold px-3"><X className="w-4 h-4" /></Button>
@@ -229,27 +230,27 @@ export const ProductFormDialog: React.FC<Props> = ({ open, onOpenChange, product
 
           {!isEdit && (
             <div className="md:w-1/2">
-              <Label>Starting stock</Label>
+              <Label>{tr('Stock de départ', 'المخزون الابتدائي')}</Label>
               <Input type="number" min="0" value={form.currentStock} onChange={(e) => update('currentStock', e.target.value)} className="gym-input mt-1" placeholder="0" />
             </div>
           )}
 
           {isEdit && (
             <div className="grid grid-cols-2 gap-3 border-t border-gym-gold/15 pt-4">
-              <div><Label>Cost price</Label><Input type="number" step="0.01" min="0" value={form.realPrice} onChange={(e) => update('realPrice', e.target.value)} className="gym-input mt-1" /></div>
-              <div><Label>Sell price</Label><Input type="number" step="0.01" min="0" value={form.sellPrice} onChange={(e) => update('sellPrice', e.target.value)} className="gym-input mt-1" /></div>
-              <div><Label>Principal qty</Label><Input type="number" min="0" value={form.initialQuantity} onChange={(e) => update('initialQuantity', e.target.value)} className="gym-input mt-1" /></div>
-              <div><Label>Current stock</Label><Input type="number" min="0" value={form.currentStock} onChange={(e) => update('currentStock', e.target.value)} className="gym-input mt-1" /></div>
-              <div><Label>Min stock</Label><Input type="number" min="0" value={form.minStockLevel} onChange={(e) => update('minStockLevel', e.target.value)} className="gym-input mt-1" /></div>
-              <div><Label>Expiry date</Label><Input type="date" value={form.expiryDate} onChange={(e) => update('expiryDate', e.target.value)} className="gym-input mt-1" /></div>
+              <div><Label>{tr('Prix d’achat', 'سعر الشراء')}</Label><Input type="number" step="0.01" min="0" value={form.realPrice} onChange={(e) => update('realPrice', e.target.value)} className="gym-input mt-1" /></div>
+              <div><Label>{tr('Prix de vente', 'سعر البيع')}</Label><Input type="number" step="0.01" min="0" value={form.sellPrice} onChange={(e) => update('sellPrice', e.target.value)} className="gym-input mt-1" /></div>
+              <div><Label>{tr('Qté initiale', 'الكمية الأولية')}</Label><Input type="number" min="0" value={form.initialQuantity} onChange={(e) => update('initialQuantity', e.target.value)} className="gym-input mt-1" /></div>
+              <div><Label>{tr('Stock actuel', 'المخزون الحالي')}</Label><Input type="number" min="0" value={form.currentStock} onChange={(e) => update('currentStock', e.target.value)} className="gym-input mt-1" /></div>
+              <div><Label>{tr('Stock min.', 'الحد الأدنى')}</Label><Input type="number" min="0" value={form.minStockLevel} onChange={(e) => update('minStockLevel', e.target.value)} className="gym-input mt-1" /></div>
+              <div><Label>{tr('Date d’expiration', 'تاريخ الانتهاء')}</Label><Input type="date" value={form.expiryDate} onChange={(e) => update('expiryDate', e.target.value)} className="gym-input mt-1" /></div>
             </div>
           )}
         </div>
 
         <DialogFooter className="gap-2">
-          <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={saving}>Cancel</Button>
+          <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={saving}>{tr('Annuler', 'إلغاء')}</Button>
           <Button onClick={submit} className="gym-button" disabled={saving}>
-            <Save className="w-4 h-4 mr-2" />{saving ? 'Saving…' : 'Save'}
+            <Save className="w-4 h-4 me-2" />{saving ? tr('Enregistrement…', 'جارٍ الحفظ…') : tr('Enregistrer', 'حفظ')}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -68,14 +68,18 @@ const ATHLETE_SELECT = `
   sports ( id, name )
 `;
 
-const clean = (input: AthleteInput) => ({
-  ...input,
-  email: input.email?.trim().toLowerCase() || null,
-  phone: input.phone?.trim() || null,
-  date_of_birth: input.date_of_birth || null,
-  address: input.address?.trim() || null,
-  rfid_uid: input.rfid_uid?.trim().toUpperCase() || null,
-});
+const clean = (input: AthleteInput) => {
+  const out: Record<string, unknown> = {
+    ...input,
+    phone: input.phone?.trim() || null,
+    date_of_birth: input.date_of_birth || null,
+    rfid_uid: input.rfid_uid?.trim().toUpperCase() || null,
+  };
+  // Email / address are no longer in the form: only touch them when given.
+  if (input.email !== undefined) out.email = input.email?.trim().toLowerCase() || null;
+  if (input.address !== undefined) out.address = input.address?.trim() || null;
+  return out;
+};
 
 // ---------------------------------------------------------------------------
 // Athletes
@@ -178,20 +182,19 @@ export async function deleteSubscriptionType(id: string): Promise<void> {
  * "active" = an athlete_subscriptions row whose expiry is null (open) or in the
  * future. Counted client-side from a single fetch to avoid N per-type queries.
  */
-export async function subscriptionUsage(): Promise<Record<string, { members: number; revenue: number }>> {
+export async function subscriptionUsage(): Promise<Record<string, { members: number }>> {
   const { data, error } = await supabase
     .from('athlete_subscriptions')
     .select('subscription_id, amount_paid, expiry_date');
   if (error) throw error;
 
   const todayIso = new Date().toISOString().split('T')[0];
-  const out: Record<string, { members: number; revenue: number }> = {};
+  const out: Record<string, { members: number }> = {};
   for (const row of (data ?? []) as { subscription_id: string | null; amount_paid: number; expiry_date: string | null }[]) {
     if (!row.subscription_id) continue;
     const active = !row.expiry_date || row.expiry_date >= todayIso;
-    const cur = out[row.subscription_id] ?? { members: 0, revenue: 0 };
+    const cur = out[row.subscription_id] ?? { members: 0 };
     if (active) cur.members += 1;
-    cur.revenue += Number(row.amount_paid || 0);
     out[row.subscription_id] = cur;
   }
   return out;
@@ -266,7 +269,7 @@ export async function assignSubscription(input: AssignSubscriptionInput): Promis
         athlete_id: input.athleteId,
         amount: creditUsed,
         credit_date: paymentDate,
-        description: `Payment for ${sub.name}`,
+        description: `Paiement ${sub.name}`,
         type: 'used',
       });
       if (cErr) throw cErr;
@@ -442,7 +445,7 @@ export async function addCredit(input: {
     athlete_id: input.athleteId,
     amount: input.amount,
     credit_date: new Date().toISOString().split('T')[0],
-    description: input.description?.trim() || 'Credit deposit',
+    description: input.description?.trim() || 'Dépôt de crédit',
     type: 'deposit',
   });
   if (error) throw error;

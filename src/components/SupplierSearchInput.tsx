@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ChevronDown, Check, Search } from 'lucide-react';
+import { tr } from '@/lib/i18n';
 
 /** Minimal supplier shape this input needs — decoupled from any data layer. */
 interface Supplier {
@@ -94,7 +95,7 @@ export const SupplierSearchInput: React.FC<SupplierSearchInputProps> = ({
       
       <div className="relative" ref={dropdownRef}>
         <div className="relative flex items-center">
-          <Search className="absolute left-3 w-4 h-4 text-gym-gold/40" />
+          <Search className="absolute start-3 w-4 h-4 text-gym-gold/40" />
           <Input
             ref={inputRef}
             type="text"
@@ -102,10 +103,10 @@ export const SupplierSearchInput: React.FC<SupplierSearchInputProps> = ({
             onChange={handleInputChange}
             onFocus={handleInputFocus}
             placeholder={placeholder}
-            className="pl-10 pr-10 gym-input"
+            className="ps-10 pe-10 gym-input"
           />
           <ChevronDown
-            className={`absolute right-3 w-4 h-4 text-gym-gold/40 transition-transform ${
+            className={`absolute end-3 w-4 h-4 text-gym-gold/40 transition-transform ${
               isOpen ? 'rotate-180' : ''
             }`}
           />
@@ -120,7 +121,7 @@ export const SupplierSearchInput: React.FC<SupplierSearchInputProps> = ({
                   <button
                     key={supplier.id}
                     onClick={() => handleSelectSupplier(supplier)}
-                    className={`w-full text-left px-4 py-3 hover:bg-gym-gold/15 transition-colors flex items-center justify-between group ${
+                    className={`w-full text-start px-4 py-3 hover:bg-gym-gold/15 transition-colors flex items-center justify-between group ${
                       index !== filteredSuppliers.length - 1 ? 'border-b border-gym-gold/10' : ''
                     } ${selectedSupplier?.id === supplier.id ? 'bg-gym-gold/10' : ''}`}
                   >
@@ -140,8 +141,8 @@ export const SupplierSearchInput: React.FC<SupplierSearchInputProps> = ({
               </div>
             ) : (
               <div className="px-4 py-6 text-center">
-                <p className="text-gym-gold/60 text-sm">No suppliers found</p>
-                <p className="text-gym-gold/40 text-xs mt-1">Try a different search term</p>
+                <p className="text-gym-gold/60 text-sm">{tr('Aucun fournisseur trouvé', 'لم يتم العثور على موردين')}</p>
+                <p className="text-gym-gold/40 text-xs mt-1">{tr('Essayez un autre terme de recherche', 'جرّب كلمة بحث أخرى')}</p>
               </div>
             )}
           </div>
@@ -150,7 +151,7 @@ export const SupplierSearchInput: React.FC<SupplierSearchInputProps> = ({
         {/* Selected indicator */}
         {selectedSupplier && !isOpen && (
           <div className="text-xs text-gym-gold/70 mt-2 p-2 bg-gym-gold/5 rounded border border-gym-gold/20">
-            <strong className="text-gym-gold">Selected:</strong> {selectedSupplier.name}
+            <strong className="text-gym-gold">{tr('Sélectionné :', 'المحدد:')}</strong> {selectedSupplier.name}
           </div>
         )}
       </div>

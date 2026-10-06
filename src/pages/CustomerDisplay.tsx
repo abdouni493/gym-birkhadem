@@ -43,7 +43,7 @@ const STATUS_STYLE: Record<ScanStatus, {
   },
 };
 
-const LOCALE = { en: 'en-GB', fr: 'fr-FR', ar: 'ar-DZ' } as const;
+const LOCALE = { fr: 'fr-FR', ar: 'ar-DZ' } as const;
 
 export const CustomerDisplay: React.FC = () => {
   const { language, storeSettings } = useAuth();

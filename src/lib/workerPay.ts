@@ -1,3 +1,4 @@
+import { tr } from '@/lib/i18n';
 /**
  * Worker salary calculation.
  *
@@ -72,8 +73,8 @@ export const toISO = (d: Date): string => {
 
 const lastDayOfMonth = (y: number, m: number): number => new Date(y, m + 1, 0).getDate();
 
-const MONTHS = ['January','February','March','April','May','June',
-                'July','August','September','October','November','December'];
+const months = () => [tr('Janvier', 'جانفي'),tr('Février', 'فيفري'),tr('Mars', 'مارس'),tr('Avril', 'أفريل'),tr('Mai', 'ماي'),tr('Juin', 'جوان'),
+                tr('Juillet', 'جويلية'),tr('Août', 'أوت'),tr('Septembre', 'سبتمبر'),tr('Octobre', 'أكتوبر'),tr('Novembre', 'نوفمبر'),'December'];
 
 /**
  * Every period from the worker's start date up to `asOf` that has not already
@@ -111,7 +112,7 @@ export function computeUnpaidPeriods(
       if (!covered(first, last)) {
         out.push({
           key: `${y}-${String(m + 1).padStart(2, '0')}`,
-          label: `${MONTHS[m]} ${y}`,
+          label: `${months()[m]} ${y}`,
           start: first,
           end: last,
           amount: config.payAmount,

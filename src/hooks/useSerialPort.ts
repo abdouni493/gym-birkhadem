@@ -15,6 +15,7 @@
  */
 
 import { useCallback, useRef, useState } from 'react';
+import { tr } from '@/lib/i18n';
 
 // ── Serial port configuration ────────────────────────────────────────────────
 const PORT_OPTIONS: SerialOptions = {
@@ -37,10 +38,10 @@ function friendlyError(err: unknown): string {
   if (msg.includes('already open') || msg.includes('in use')) {
     return 'COM4 is already in use by another application. Close Serial Port Monitor or any other program using COM4 and try again.';
   }
-  if (msg.includes('not found') || msg.includes('No port')) {
+  if (msg.includes('not found') || msg.includes(tr('Aucun port', 'لا يوجد منفذ'))) {
     return 'COM4 not found. Make sure the RFID reader is connected and the correct port is selected.';
   }
-  if (msg.includes('NetworkError') || msg.includes('Failed to open')) {
+  if (msg.includes('NetworkError') || msg.includes(tr('Ouverture impossible', 'تعذر الفتح'))) {
     return 'Failed to open COM4. Check that the RFID reader is plugged in and no other app is using it.';
   }
   if (msg.includes('SecurityError') || msg.includes('permission')) {
@@ -77,7 +78,7 @@ export function useSerialPort(): UseSerialPortReturn {
   const getPort = useCallback(async (): Promise<SerialPort> => {
     if (!('serial' in navigator)) {
       throw new Error(
-        'SecurityError: Web Serial API is not available. Open the app in Chrome or Edge via localhost.'
+        tr('Web Serial n’est pas disponible. Ouvrez l’application dans Chrome ou Edge via localhost.', 'واجهة Web Serial غير متاحة. افتح التطبيق في Chrome أو Edge عبر localhost.')
       );
     }
     // Check if the user already granted access to a port in a previous session

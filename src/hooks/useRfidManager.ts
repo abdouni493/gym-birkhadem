@@ -7,6 +7,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useSerialPort } from './useSerialPort';
 import { setAthleteRfid, getAthleteRfid } from '@/lib/api/athletes';
+import { tr } from '@/lib/i18n';
 
 export type RfidState = 'idle' | 'scanning' | 'success' | 'timeout' | 'error';
 
@@ -50,7 +51,7 @@ export function useRfidManager(initialRfid?: string, originalRfid?: string): Use
       
       // Validate UID format (should be hex string)
       if (!uid || !/^[0-9A-Fa-f]{1,}$/.test(uid)) {
-        throw new Error('Invalid RFID card format');
+        throw new Error(tr('Format de carte RFID invalide', 'صيغة بطاقة RFID غير صالحة'));
       }
 
       const normalizedUid = uid.toUpperCase();
@@ -70,7 +71,7 @@ export function useRfidManager(initialRfid?: string, originalRfid?: string): Use
       
       if (message === 'TIMEOUT') {
         setRfidState('timeout');
-        setRfidError('No card detected — timeout after 15s. Place the card on the reader and retry.');
+        setRfidError(tr('Aucune carte détectée (15 s). Posez la carte sur le lecteur et réessayez.', 'لم يتم اكتشاف بطاقة (15 ثانية). ضع البطاقة على القارئ وأعد المحاولة.'));
       } else {
         setRfidState('error');
         setRfidError(message);
@@ -107,7 +108,7 @@ export function useRfidManager(initialRfid?: string, originalRfid?: string): Use
    */
   const saveRfidToAthlete = useCallback(async (athleteId: string) => {
     if (!athleteId) {
-      throw new Error('Athlete ID is required');
+      throw new Error(tr('L’identifiant de l’athlète est requis', 'معرّف الرياضي مطلوب'));
     }
 
     try {
@@ -134,7 +135,7 @@ export function useRfidManager(initialRfid?: string, originalRfid?: string): Use
    */
   const loadRfidFromAthlete = useCallback(async (athleteId: string) => {
     if (!athleteId) {
-      throw new Error('Athlete ID is required');
+      throw new Error(tr('L’identifiant de l’athlète est requis', 'معرّف الرياضي مطلوب'));
     }
 
     try {

@@ -16,6 +16,7 @@ import {
 } from '@/lib/api/workers';
 import { INTERFACE_BY_KEY } from '@/lib/permissions';
 import { computeUnpaidPeriods, unsettled, AcompteRow, AbsenceRow, PaymentRow } from '@/lib/workerPay';
+import { tr } from '@/lib/i18n';
 
 interface Props {
   isOpen: boolean;
@@ -52,7 +53,7 @@ export const WorkerViewDialog: React.FC<Props> = ({ isOpen, onClose, worker }) =
         if (!active) return;
         setAcomptes(ac); setAbsences(ab); setPayments(pay); setPerms(pm);
       } catch (e) {
-        toast({ title: 'Could not load details', description: describeError(e), variant: 'destructive' });
+        toast({ title: tr('Impossible de charger les détails', 'تعذر تحميل التفاصيل'), description: describeError(e), variant: 'destructive' });
       } finally {
         if (active) setLoading(false);
       }
@@ -80,9 +81,9 @@ export const WorkerViewDialog: React.FC<Props> = ({ isOpen, onClose, worker }) =
     <Dialog open={isOpen} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="bg-gym-gray border-gym-gold/20 text-gym-gold max-w-2xl max-h-[92vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="gradient-text">Worker details</DialogTitle>
+          <DialogTitle className="gradient-text">{tr('Détails de l’employé', 'تفاصيل العامل')}</DialogTitle>
           <DialogDescription className="text-gym-gold/60">
-            Everything recorded for this worker.
+            {tr('Tout ce qui est enregistré pour cet employé.', 'كل ما هو مسجل لهذا العامل.')}
           </DialogDescription>
         </DialogHeader>
 
@@ -96,7 +97,7 @@ export const WorkerViewDialog: React.FC<Props> = ({ isOpen, onClose, worker }) =
           <div className="min-w-0">
             <h2 className="text-xl font-bold text-gym-gold truncate">{worker.full_name}</h2>
             <div className="flex flex-wrap items-center gap-2 mt-1">
-              <Badge className="bg-gym-gold/20 text-gym-gold border-0">{worker.roles?.name ?? 'No role'}</Badge>
+              <Badge className="bg-gym-gold/20 text-gym-gold border-0">{worker.roles?.name ?? tr('Sans rôle', 'بدون دور')}</Badge>
               <Badge variant="outline"
                      className={worker.status === 'active'
                        ? 'border-green-500/40 text-green-400'
@@ -105,8 +106,8 @@ export const WorkerViewDialog: React.FC<Props> = ({ isOpen, onClose, worker }) =
               </Badge>
               {worker.user_id && (
                 <Badge variant="outline" className="border-blue-500/40 text-blue-300">
-                  <KeyRound className="w-3 h-3 mr-1" />
-                  {worker.account_active ? 'Login active' : 'Login disabled'}
+                  <KeyRound className="w-3 h-3 me-1" />
+                  {worker.account_active ? tr('Connexion active', 'الدخول مفعل') : tr('Connexion désactivée', 'الدخول معطل')}
                 </Badge>
               )}
             </div>
@@ -117,13 +118,13 @@ export const WorkerViewDialog: React.FC<Props> = ({ isOpen, onClose, worker }) =
 
         {/* Information */}
         <section>
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-gym-gold/50 mb-1">Information</h3>
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-gym-gold/50 mb-1">{tr('Informations', 'المعلومات')}</h3>
           <div className="divide-y divide-gym-gold/10">
-            <Row icon={<Phone className="w-4 h-4" />} label="Phone" value={worker.phone || '—'} />
-            <Row icon={<Cake className="w-4 h-4" />} label="Birthday" value={worker.birthday || '—'} />
-            <Row icon={<CreditCard className="w-4 h-4" />} label="ID card" value={worker.id_card_number || '—'} />
-            <Row icon={<Mail className="w-4 h-4" />} label="Email" value={worker.email || '—'} />
-            <Row icon={<CalendarDays className="w-4 h-4" />} label="Started working" value={worker.start_date} />
+            <Row icon={<Phone className="w-4 h-4" />} label={tr('Téléphone', 'الهاتف')} value={worker.phone || '—'} />
+            <Row icon={<Cake className="w-4 h-4" />} label={tr('Date de naissance', 'تاريخ الميلاد')} value={worker.birthday || '—'} />
+            <Row icon={<CreditCard className="w-4 h-4" />} label={tr('Carte d’identité', 'بطاقة التعريف')} value={worker.id_card_number || '—'} />
+            <Row icon={<Mail className="w-4 h-4" />} label={tr('E-mail', 'البريد الإلكتروني')} value={worker.email || '—'} />
+            <Row icon={<CalendarDays className="w-4 h-4" />} label={tr('Début du travail', 'بداية العمل')} value={worker.start_date} />
           </div>
         </section>
 
@@ -131,30 +132,30 @@ export const WorkerViewDialog: React.FC<Props> = ({ isOpen, onClose, worker }) =
 
         {/* Pay */}
         <section>
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-gym-gold/50 mb-1">Payment</h3>
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-gym-gold/50 mb-1">{tr('Paiement', 'الدفع')}</h3>
           {!worker.pay_enabled ? (
-            <p className="text-sm text-gym-gold/50 py-2">This worker is not paid through the app.</p>
+            <p className="text-sm text-gym-gold/50 py-2">{tr('Cet employé n’est pas payé via l’application.', 'هذا العامل لا يُدفع له عبر التطبيق.')}</p>
           ) : (
             <>
               <div className="divide-y divide-gym-gold/10">
-                <Row icon={<Wallet className="w-4 h-4" />} label="Rate"
+                <Row icon={<Wallet className="w-4 h-4" />} label={tr('Tarif', 'الأجر')}
                      value={`${formatDZD(worker.pay_amount)} / ${worker.pay_type === 'daily' ? 'day' : 'month'}`} />
               </div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-3">
                 <div className="rounded-lg border border-gym-gold/20 p-2.5">
-                  <p className="text-[10px] uppercase text-gym-gold/40">Total paid</p>
+                  <p className="text-[10px] uppercase text-gym-gold/40">{tr('Total payé', 'إجمالي المدفوع')}</p>
                   <p className="text-sm font-semibold text-green-400">{formatDZD(totalPaid)}</p>
                 </div>
                 <div className="rounded-lg border border-gym-gold/20 p-2.5">
-                  <p className="text-[10px] uppercase text-gym-gold/40">Unpaid {worker.pay_type === 'daily' ? 'days' : 'months'}</p>
+                  <p className="text-[10px] uppercase text-gym-gold/40">{worker.pay_type === 'daily' ? tr('Jours non payés', 'أيام غير مدفوعة') : tr('Mois non payés', 'أشهر غير مدفوعة')}</p>
                   <p className="text-sm font-semibold">{loading ? '…' : unpaid.length}</p>
                 </div>
                 <div className="rounded-lg border border-gym-gold/20 p-2.5">
-                  <p className="text-[10px] uppercase text-gym-gold/40">Advances due</p>
+                  <p className="text-[10px] uppercase text-gym-gold/40">{tr('Acomptes dus', 'التسبيقات المستحقة')}</p>
                   <p className="text-sm font-semibold text-amber-300">{formatDZD(pendingAcomptes)}</p>
                 </div>
                 <div className="rounded-lg border border-gym-gold/20 p-2.5">
-                  <p className="text-[10px] uppercase text-gym-gold/40">Absence costs</p>
+                  <p className="text-[10px] uppercase text-gym-gold/40">{tr('Coûts d’absence', 'تكاليف الغياب')}</p>
                   <p className="text-sm font-semibold text-orange-300">{formatDZD(pendingAbsences)}</p>
                 </div>
               </div>
@@ -167,20 +168,20 @@ export const WorkerViewDialog: React.FC<Props> = ({ isOpen, onClose, worker }) =
         {/* Permissions */}
         <section>
           <h3 className="text-xs font-semibold uppercase tracking-wider text-gym-gold/50 mb-2 flex items-center gap-2">
-            <Shield className="w-3.5 h-3.5" />Access
+            <Shield className="w-3.5 h-3.5" />{tr('Accès', 'الوصول')}
           </h3>
           {isAdmin ? (
-            <p className="text-sm text-gym-gold/70">Admin role — full access to everything.</p>
+            <p className="text-sm text-gym-gold/70">{tr('Rôle administrateur — accès complet.', 'دور المسؤول — وصول كامل.')}</p>
           ) : visibleIfaces.length === 0 ? (
-            <p className="text-sm text-gym-gold/50">No interfaces granted yet.</p>
+            <p className="text-sm text-gym-gold/50">{tr('Aucune interface accordée.', 'لم تُمنح أي واجهة بعد.')}</p>
           ) : (
             <div className="flex flex-wrap gap-1.5">
               {visibleIfaces.map((p) => {
                 const nActions = perms.filter((x) => x.interface_key === p.interface_key && x.action_key !== null).length;
                 return (
                   <Badge key={p.interface_key} variant="outline" className="border-gym-gold/30 text-gym-gold/80">
-                    {INTERFACE_BY_KEY[p.interface_key]?.label ?? p.interface_key}
-                    {nActions > 0 && <span className="ml-1 text-gym-gold/50">· {nActions}</span>}
+                    {INTERFACE_BY_KEY[p.interface_key] ? tr(INTERFACE_BY_KEY[p.interface_key].label, INTERFACE_BY_KEY[p.interface_key].labelAr) : p.interface_key}
+                    {nActions > 0 && <span className="ms-1 text-gym-gold/50">· {nActions}</span>}
                   </Badge>
                 );
               })}
@@ -193,9 +194,9 @@ export const WorkerViewDialog: React.FC<Props> = ({ isOpen, onClose, worker }) =
           <>
             <Separator className="bg-gym-gold/15" />
             <section>
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-gym-gold/50 mb-2">Recent payments</h3>
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-gym-gold/50 mb-2">{tr('Paiements récents', 'آخر المدفوعات')}</h3>
               <ScrollArea className="max-h-[140px]">
-                <div className="space-y-1.5 pr-2">
+                <div className="space-y-1.5 pe-2">
                   {payments.slice(0, 8).map((p) => (
                     <div key={p.id} className="flex justify-between text-xs p-2 rounded border border-gym-gold/10">
                       <span className="text-gym-gold/60">{p.period_start} → {p.period_end}</span>

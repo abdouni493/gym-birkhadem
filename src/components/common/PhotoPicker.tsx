@@ -142,33 +142,33 @@ export const PhotoPicker: React.FC<Props> = ({ preview, onChange, t, preset = 'a
         {cameraOn ? (
           <div className="flex flex-wrap gap-2">
             <Button type="button" onClick={capture} className="gym-button">
-              <Aperture className="w-4 h-4 mr-2" />{t('photo.capture')}
+              <Aperture className="w-4 h-4 me-2" />{t('photo.capture')}
             </Button>
             {devices.length > 1 && (
               <Button type="button" variant="outline" onClick={switchCamera}
                       className="border-gym-gold/40 text-gym-gold hover:bg-gym-gold/10 bg-transparent">
-                <SwitchCamera className="w-4 h-4 mr-2" />{t('photo.switchCamera')}
+                <SwitchCamera className="w-4 h-4 me-2" />{t('photo.switchCamera')}
               </Button>
             )}
             <Button type="button" variant="ghost" onClick={stopCamera}
                     className="text-gym-gold/70 hover:text-gym-gold hover:bg-gym-gold/10">
-              <X className="w-4 h-4 mr-2" />{t('photo.cancel')}
+              <X className="w-4 h-4 me-2" />{t('photo.cancel')}
             </Button>
           </div>
         ) : (
           <div className="flex flex-wrap gap-2">
             <Button type="button" variant="outline" onClick={() => startCamera()} disabled={busy}
                     className="border-gym-gold/40 text-gym-gold hover:bg-gym-gold/10 bg-transparent">
-              <Camera className="w-4 h-4 mr-2" />{t('photo.take')}
+              <Camera className="w-4 h-4 me-2" />{t('photo.take')}
             </Button>
             <Button type="button" variant="outline" onClick={() => fileRef.current?.click()} disabled={busy}
                     className="border-gym-gold/40 text-gym-gold hover:bg-gym-gold/10 bg-transparent">
-              <ImageUp className="w-4 h-4 mr-2" />{t('photo.upload')}
+              <ImageUp className="w-4 h-4 me-2" />{t('photo.upload')}
             </Button>
             {preview && (
               <Button type="button" variant="ghost" onClick={remove} disabled={busy}
                       className="text-red-400 hover:text-red-300 hover:bg-red-500/10">
-                <Trash2 className="w-4 h-4 mr-2" />{t('photo.remove')}
+                <Trash2 className="w-4 h-4 me-2" />{t('photo.remove')}
               </Button>
             )}
           </div>

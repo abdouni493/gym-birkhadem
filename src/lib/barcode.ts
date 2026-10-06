@@ -1,3 +1,4 @@
+import { tr } from '@/lib/i18n';
 // Self-contained Code 128 (subset B) barcode generator — no external dependency.
 // Produces an SVG string that any Code 128 scanner can read.
 
@@ -121,7 +122,7 @@ export function printBarcodes(
 
   const win = window.open('', '_blank', 'width=420,height=600');
   if (!win) return;
-  win.document.write(`<!DOCTYPE html><html><head><title>Barcode</title>
+  win.document.write(`<!DOCTYPE html><html><head><title>{tr('Code-barres', 'الباركود')}</title>
     <style>
       body { font-family: Arial, sans-serif; margin: 0; padding: 16px; }
       .label { display: inline-flex; flex-direction: column; align-items: center;

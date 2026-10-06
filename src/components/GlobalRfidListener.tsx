@@ -26,7 +26,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from '@/lib/i18n';
 import { VoiceKey, preloadVoices } from '@/lib/accessVoice';
 import { FORWARDED_SCAN, announceScan } from '@/lib/customerDisplay';
-import { ShieldCheck, ShieldX, ShieldAlert, X, User, Calendar, Wifi, Clock } from 'lucide-react';
+import { addAttendance, listDebtItems } from '@/lib/api/athleteExtras';
+import { makeTr } from '@/lib/i18n';
+import { ShieldCheck, AlertTriangle, ShieldX, ShieldAlert, X, User, Calendar, Wifi, Clock } from 'lucide-react';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 type SessionsInfo = {
@@ -43,6 +45,8 @@ type AccessResult = {
   daysLeft?: number;
   sessionsInfo?: SessionsInfo;
   uid: string;
+  /** Outstanding debt, shown as a warning on the overlay. */
+  debt?: number;
   /** Spoken message; defaults from `type` (granted → enter, warning → soon_expire, else not_enter). */
   voice?: VoiceKey;
 };
@@ -57,6 +61,7 @@ export const GlobalRfidListener: React.FC = () => {
   useSerialPort();
   const { language } = useAuth();
   const { t } = useTranslation(language);
+  const tr = makeTr(language);
   const [result, setResult] = useState<AccessResult | null>(null);
   const [visible, setVisible] = useState(false);
   const [animating, setAnimating] = useState(false);
@@ -70,9 +75,22 @@ export const GlobalRfidListener: React.FC = () => {
   // Auto-hide overlay after delay
   const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const showResult = useCallback((res: AccessResult) => {
+  const showResult = useCallback(async (res: AccessResult) => {
     // Clear any existing hide timer
     if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+
+    // Admitted athletes get a presence row; any athlete gets their debt shown.
+    if (res.athlete) {
+      if (res.type === 'granted' || res.type === 'warning') {
+        addAttendance({ athleteId: res.athlete.id, status: 'present', source: 'scan', notes: res.message })
+          .catch((e) => console.error('Failed to record attendance:', e));
+      }
+      try {
+        const items = await listDebtItems(res.athlete.id);
+        const debt = items.reduce((s, i) => s + i.remaining, 0);
+        if (debt > 0) res = { ...res, debt };
+      } catch { /* debt is informational only */ }
+    }
 
     setResult(res);
     setVisible(true);
@@ -157,7 +175,7 @@ export const GlobalRfidListener: React.FC = () => {
           athlete,
           uid,
           message: t('rfid.expired'),
-          subMessage: `${t('rfid.expiredOn')} ${expiryDate.toLocaleDateString(language === 'ar' ? 'ar' : language === 'fr' ? 'fr-FR' : 'en-US')}`,
+          subMessage: `${t('rfid.expiredOn')} ${expiryDate.toLocaleDateString(language === 'ar' ? 'ar-DZ' : 'fr-FR')}`,
           daysLeft: 0,
         });
         processingRef.current = false;
@@ -245,7 +263,7 @@ export const GlobalRfidListener: React.FC = () => {
             athleteId: athlete.id,
             athleteSubscriptionId: latestSubWithSessions.id,
             seancesRemaining: newRemaining,
-            notes: 'Auto-deducted by RFID scan',
+            notes: 'Déduite automatiquement par scan RFID',
           });
           console.log(`📉 Session deducted: ${newRemaining}/${latestSubWithSessions.sessions} remaining for ${athlete.first_name}`);
         } catch (err) {
@@ -478,6 +496,7 @@ export const GlobalRfidListener: React.FC = () => {
 
   return (
     <div
+      dir={language === 'ar' ? 'rtl' : 'ltr'}
       className={`fixed inset-0 z-[9999] flex items-center justify-center pointer-events-none transition-opacity duration-400 ${
         animating ? 'opacity-100' : 'opacity-0'
       }`}
@@ -497,7 +516,7 @@ export const GlobalRfidListener: React.FC = () => {
         {/* Close button */}
         <button
           onClick={hideOverlay}
-          className="absolute top-3 right-3 p-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white/60 hover:text-white transition-colors z-10"
+          className="absolute top-3 end-3 p-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white/60 hover:text-white transition-colors z-10"
         >
           <X className="w-4 h-4" />
         </button>
@@ -561,6 +580,16 @@ export const GlobalRfidListener: React.FC = () => {
                   )}
                 </div>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Debt warning */}
+        {result?.debt !== undefined && result.debt > 0 && (
+          <div className="px-6 pb-4">
+            <div className="flex items-center justify-center gap-2 p-3 rounded-xl bg-red-500/20 border border-red-500/40 text-red-200 text-sm font-semibold">
+              <AlertTriangle className="w-4 h-4" />
+              {tr('Dette à régler', 'دين مستحق')} : {new Intl.NumberFormat(language === 'ar' ? 'ar-DZ' : 'fr-DZ', { style: 'currency', currency: 'DZD' }).format(result.debt)}
             </div>
           </div>
         )}

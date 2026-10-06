@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { tr } from '@/lib/i18n';
 
 const url = import.meta.env.VITE_SUPABASE_URL as string | undefined;
 const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
@@ -37,7 +38,7 @@ export function describeError(e: unknown): string {
   const err = e as { message?: string; code?: string; details?: string };
 
   // Raised by our RLS policies / guards.
-  if (err.code === '42501') return err.message || 'You do not have permission to do that.';
+  if (err.code === '42501') return err.message || tr('Vous n’avez pas la permission de faire cela.', 'ليست لديك صلاحية للقيام بذلك.');
   if (err.code === '23505') return 'That record already exists.';
   if (err.code === '23503') return 'That record is still referenced by something else.';
 

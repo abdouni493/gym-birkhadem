@@ -21,6 +21,7 @@ import { usePermissions } from '@/contexts/AuthContext';
 import {
   Client, ClientInvoice, listClients, createClient, updateClient, deleteClient, listClientInvoices,
 } from '@/lib/api/misc';
+import { tr } from '@/lib/i18n';
 
 export const Clients: React.FC = () => {
   const { can } = usePermissions();
@@ -61,15 +62,15 @@ export const Clients: React.FC = () => {
   const openEdit = (c: Client) => { setEditing(c); setForm({ name: c.name, phone: c.phone ?? '', address: c.address ?? '' }); setFormOpen(true); };
 
   const save = async () => {
-    if (!form.name.trim()) { toast({ title: 'Name required', variant: 'destructive' }); return; }
+    if (!form.name.trim()) { toast({ title: tr('Nom obligatoire', 'الاسم مطلوب'), variant: 'destructive' }); return; }
     setSaving(true);
     try {
-      if (editing) { await updateClient(editing.id, form); toast({ title: 'Client updated' }); }
-      else { await createClient(form); toast({ title: 'Client created' }); }
+      if (editing) { await updateClient(editing.id, form); toast({ title: tr('Client modifié', 'تم تعديل الزبون') }); }
+      else { await createClient(form); toast({ title: tr('Client créé', 'تم إنشاء الزبون') }); }
       setFormOpen(false);
       await load();
     } catch (e) {
-      toast({ title: 'Could not save', description: describeError(e), variant: 'destructive' });
+      toast({ title: tr('Enregistrement impossible', 'تعذر الحفظ'), description: describeError(e), variant: 'destructive' });
     } finally {
       setSaving(false);
     }
@@ -79,11 +80,11 @@ export const Clients: React.FC = () => {
     if (!toDelete) return;
     try {
       await deleteClient(toDelete.id);
-      toast({ title: 'Client deleted' });
+      toast({ title: tr('Client supprimé', 'تم حذف الزبون') });
       setToDelete(null);
       await load();
     } catch (e) {
-      toast({ title: 'Could not delete', description: describeError(e), variant: 'destructive' });
+      toast({ title: tr('Suppression impossible', 'تعذر الحذف'), description: describeError(e), variant: 'destructive' });
     }
   };
 
@@ -92,7 +93,7 @@ export const Clients: React.FC = () => {
     try {
       setHistoryRows(await listClientInvoices(c.id));
     } catch (e) {
-      toast({ title: 'Could not load history', description: describeError(e), variant: 'destructive' });
+      toast({ title: tr('Impossible de charger l’historique', 'تعذر تحميل السجل'), description: describeError(e), variant: 'destructive' });
     }
   };
 
@@ -107,12 +108,12 @@ export const Clients: React.FC = () => {
       <div className="max-w-7xl mx-auto space-y-6">
         <div className="flex flex-wrap justify-between items-center gap-3">
           <div>
-            <h1 className="text-3xl font-bold gradient-text">Clients</h1>
-            <p className="text-gym-gold/60 mt-1">Your retail customers.</p>
+            <h1 className="text-3xl font-bold gradient-text">{tr('Clients', 'الزبائن')}</h1>
+            <p className="text-gym-gold/60 mt-1">{tr('Vos clients de la boutique.', 'زبائن المتجر.')}</p>
           </div>
           {can('clients', 'create') && (
             <Button onClick={openCreate} className="bg-gym-gold text-gym-black hover:bg-gym-gold/90">
-              <Plus className="w-4 h-4 mr-2" />New client
+              <Plus className="w-4 h-4 me-2" />{tr('Nouveau client', 'زبون جديد')}
             </Button>
           )}
         </div>
@@ -120,28 +121,28 @@ export const Clients: React.FC = () => {
         <Card className="bg-gym-gray border-gym-gold/20">
           <CardContent className="p-4">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gym-gold/50 w-4 h-4" />
-              <Input placeholder="Search by name or phone…" value={search} onChange={(e) => setSearch(e.target.value)}
-                     className="pl-10 bg-gym-black border-gym-gold/30 text-gym-gold" />
+              <Search className="absolute start-3 top-1/2 -translate-y-1/2 text-gym-gold/50 w-4 h-4" />
+              <Input placeholder={tr('Rechercher par nom ou téléphone…', 'ابحث بالاسم أو الهاتف…')} value={search} onChange={(e) => setSearch(e.target.value)}
+                     className="ps-10 bg-gym-black border-gym-gold/30 text-gym-gold" />
             </div>
           </CardContent>
         </Card>
 
         {loading ? (
-          <Card className="bg-gym-gray border-gym-gold/20"><CardContent className="p-12 text-center text-gym-gold/40">Loading…</CardContent></Card>
+          <Card className="bg-gym-gray border-gym-gold/20"><CardContent className="p-12 text-center text-gym-gold/40">{tr('Chargement…', 'جارٍ التحميل…')}</CardContent></Card>
         ) : error ? (
           <Card className="bg-gym-gray border-red-500/30">
             <CardContent className="p-8 text-center space-y-3">
-              <p className="text-red-400 font-medium">Could not load clients</p>
+              <p className="text-red-400 font-medium">{tr('Impossible de charger les clients', 'تعذر تحميل الزبائن')}</p>
               <p className="text-sm text-gym-gold/50">{error}</p>
-              <Button variant="outline" onClick={load} className="border-gym-gold/30 text-gym-gold hover:bg-gym-gold/10">Try again</Button>
+              <Button variant="outline" onClick={load} className="border-gym-gold/30 text-gym-gold hover:bg-gym-gold/10">{tr('Réessayer', 'إعادة المحاولة')}</Button>
             </CardContent>
           </Card>
         ) : filtered.length === 0 ? (
           <Card className="bg-gym-gray border-gym-gold/20">
             <CardContent className="p-12 text-center">
               <Users className="w-12 h-12 mx-auto mb-3 text-gym-gold/20" />
-              <p className="text-gym-gold/60">No clients found.</p>
+              <p className="text-gym-gold/60">{tr('Aucun client trouvé.', 'لم يتم العثور على زبائن.')}</p>
             </CardContent>
           </Card>
         ) : (
@@ -185,17 +186,17 @@ export const Clients: React.FC = () => {
       <Dialog open={formOpen} onOpenChange={setFormOpen}>
         <DialogContent className="max-w-md bg-gym-gray border-gym-gold/30 text-gym-gold">
           <DialogHeader>
-            <DialogTitle className="gradient-text">{editing ? 'Edit client' : 'New client'}</DialogTitle>
-            <DialogDescription className="text-gym-gold/60">Client information.</DialogDescription>
+            <DialogTitle className="gradient-text">{editing ? tr('Modifier le client', 'تعديل الزبون') : tr('Nouveau client', 'زبون جديد')}</DialogTitle>
+            <DialogDescription className="text-gym-gold/60">{tr('Informations du client.', 'معلومات الزبون.')}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
-            <div><Label>Name *</Label><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="gym-input mt-1" /></div>
-            <div><Label>Phone</Label><Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className="gym-input mt-1" /></div>
-            <div><Label>Address</Label><Textarea value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} className="gym-input mt-1" rows={2} /></div>
+            <div><Label>{tr('Nom', 'الاسم')} *</Label><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="gym-input mt-1" /></div>
+            <div><Label>{tr('Téléphone', 'الهاتف')}</Label><Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className="gym-input mt-1" /></div>
+            <div><Label>{tr('Adresse', 'العنوان')}</Label><Textarea value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} className="gym-input mt-1" rows={2} /></div>
           </div>
           <DialogFooter className="gap-2">
-            <Button variant="ghost" onClick={() => setFormOpen(false)} disabled={saving}>Cancel</Button>
-            <Button onClick={save} className="gym-button" disabled={saving}>{saving ? 'Saving…' : 'Save'}</Button>
+            <Button variant="ghost" onClick={() => setFormOpen(false)} disabled={saving}>{tr('Annuler', 'إلغاء')}</Button>
+            <Button onClick={save} className="gym-button" disabled={saving}>{saving ? tr('Enregistrement…', 'جارٍ الحفظ…') : tr('Enregistrer', 'حفظ')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -204,34 +205,34 @@ export const Clients: React.FC = () => {
       <Dialog open={!!historyClient} onOpenChange={(o) => !o && setHistoryClient(null)}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-gym-gray border-gym-gold/30 text-gym-gold">
           <DialogHeader>
-            <DialogTitle className="gradient-text">History — {historyClient?.name}</DialogTitle>
+            <DialogTitle className="gradient-text">{tr('Historique', 'السجل')} — {historyClient?.name}</DialogTitle>
           </DialogHeader>
           <div className="grid grid-cols-3 gap-2 text-center text-sm">
-            <div className="bg-gym-gold/5 rounded p-3"><p className="text-gym-gold/60 text-xs">Total</p><p className="font-semibold">{formatDZD(histStats.total)}</p></div>
-            <div className="bg-gym-gold/5 rounded p-3"><p className="text-gym-gold/60 text-xs">Paid</p><p className="text-green-400 font-semibold">{formatDZD(histStats.paid)}</p></div>
-            <div className="bg-gym-gold/5 rounded p-3"><p className="text-gym-gold/60 text-xs">Remaining</p><p className="text-red-400 font-semibold">{formatDZD(histStats.remaining)}</p></div>
+            <div className="bg-gym-gold/5 rounded p-3"><p className="text-gym-gold/60 text-xs">{tr('Total', 'المجموع')}</p><p className="font-semibold">{formatDZD(histStats.total)}</p></div>
+            <div className="bg-gym-gold/5 rounded p-3"><p className="text-gym-gold/60 text-xs">{tr('Payé', 'مدفوع')}</p><p className="text-green-400 font-semibold">{formatDZD(histStats.paid)}</p></div>
+            <div className="bg-gym-gold/5 rounded p-3"><p className="text-gym-gold/60 text-xs">{tr('Reste', 'الباقي')}</p><p className="text-red-400 font-semibold">{formatDZD(histStats.remaining)}</p></div>
           </div>
           {historyRows.length === 0 ? (
-            <p className="text-gym-gold/50 text-center py-6">No purchases yet.</p>
+            <p className="text-gym-gold/50 text-center py-6">{tr('Aucun achat pour le moment.', 'لا توجد مشتريات بعد.')}</p>
           ) : (
             <div className="overflow-x-auto border border-gym-gold/15 rounded-lg">
               <Table>
                 <TableHeader><TableRow className="border-gym-gold/20">
-                  <TableHead className="text-gym-gold">Invoice</TableHead>
-                  <TableHead className="text-gym-gold">Date</TableHead>
-                  <TableHead className="text-gym-gold text-right">Total</TableHead>
-                  <TableHead className="text-gym-gold text-right">Paid</TableHead>
-                  <TableHead className="text-gym-gold text-right">Remaining</TableHead>
-                  <TableHead className="text-gym-gold">Status</TableHead>
+                  <TableHead className="text-gym-gold">{tr('Facture', 'فاتورة')}</TableHead>
+                  <TableHead className="text-gym-gold">{tr('Date', 'التاريخ')}</TableHead>
+                  <TableHead className="text-gym-gold text-end">{tr('Total', 'المجموع')}</TableHead>
+                  <TableHead className="text-gym-gold text-end">{tr('Payé', 'مدفوع')}</TableHead>
+                  <TableHead className="text-gym-gold text-end">{tr('Reste', 'الباقي')}</TableHead>
+                  <TableHead className="text-gym-gold">{tr('Statut', 'الحالة')}</TableHead>
                 </TableRow></TableHeader>
                 <TableBody>
                   {historyRows.map((inv) => (
                     <TableRow key={inv.id} className="border-gym-gold/10">
                       <TableCell className="text-gym-gold font-mono">{inv.invoice_number}</TableCell>
                       <TableCell className="text-gym-gold">{inv.creation_date}</TableCell>
-                      <TableCell className="text-gym-gold text-right">{formatDZD(inv.total_amount)}</TableCell>
-                      <TableCell className="text-green-400 text-right">{formatDZD(inv.amount_paid)}</TableCell>
-                      <TableCell className="text-red-400 text-right">{formatDZD(inv.total_amount - inv.amount_paid)}</TableCell>
+                      <TableCell className="text-gym-gold text-end">{formatDZD(inv.total_amount)}</TableCell>
+                      <TableCell className="text-green-400 text-end">{formatDZD(inv.amount_paid)}</TableCell>
+                      <TableCell className="text-red-400 text-end">{formatDZD(inv.total_amount - inv.amount_paid)}</TableCell>
                       <TableCell>
                         <Badge className={inv.status === 'paid'
                           ? 'bg-green-500/20 text-green-400 border border-green-500/30'
@@ -251,12 +252,12 @@ export const Clients: React.FC = () => {
       <AlertDialog open={toDelete !== null} onOpenChange={(o) => !o && setToDelete(null)}>
         <AlertDialogContent className="bg-gym-gray border-gym-gold/20 text-gym-gold">
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete {toDelete?.name}?</AlertDialogTitle>
-            <AlertDialogDescription className="text-gym-gold/60">This cannot be undone.</AlertDialogDescription>
+            <AlertDialogTitle>{tr('Supprimer', 'حذف')} {toDelete?.name} ?</AlertDialogTitle>
+            <AlertDialogDescription className="text-gym-gold/60">{tr('Cette action est irréversible.', 'لا يمكن التراجع عن هذا الإجراء.')}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="bg-transparent border-gym-gold/30 text-gym-gold hover:bg-gym-gold/10">Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete} className="bg-red-600 text-white hover:bg-red-700">Delete</AlertDialogAction>
+            <AlertDialogCancel className="bg-transparent border-gym-gold/30 text-gym-gold hover:bg-gym-gold/10">{tr('Annuler', 'إلغاء')}</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-red-600 text-white hover:bg-red-700">{tr('Supprimer', 'حذف')}</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

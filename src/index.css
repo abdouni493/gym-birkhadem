@@ -131,3 +131,23 @@
 .loading-pulse {
   animation: pulse-gold 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
+
+/* Arabic interface: a font designed for Arabic script, slightly larger line height. */
+html[dir="rtl"] body,
+html[dir="rtl"] input,
+html[dir="rtl"] textarea,
+html[dir="rtl"] button,
+html[dir="rtl"] select {
+  font-family: 'Cairo', system-ui, sans-serif;
+}
+html[dir="rtl"] body {
+  line-height: 1.6;
+}
+/* Numbers, dates and codes stay left-to-right inside Arabic text. */
+html[dir="rtl"] input[type="number"],
+html[dir="rtl"] input[type="date"],
+html[dir="rtl"] input[type="time"],
+html[dir="rtl"] .font-mono {
+  direction: ltr;
+  text-align: right;
+}

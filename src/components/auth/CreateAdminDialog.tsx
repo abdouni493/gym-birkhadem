@@ -8,6 +8,7 @@ import {
 import { toast } from '@/hooks/use-toast';
 import { supabase, describeError } from '@/lib/supabase';
 import { ShieldPlus, Eye, EyeOff } from 'lucide-react';
+import { tr } from '@/lib/i18n';
 
 interface Props {
   isOpen: boolean;
@@ -42,15 +43,15 @@ export const CreateAdminDialog: React.FC<Props> = ({ isOpen, onClose, onCreated 
     e.preventDefault();
 
     if (!username.trim() || !email.trim() || !password) {
-      toast({ title: 'Missing information', description: 'Username, email and password are required.', variant: 'destructive' });
+      toast({ title: tr('Informations manquantes', 'معلومات ناقصة'), description: tr('Le nom d’utilisateur, l’e-mail et le mot de passe sont obligatoires.', 'اسم المستخدم والبريد وكلمة المرور مطلوبة.'), variant: 'destructive' });
       return;
     }
     if (password.length < 8) {
-      toast({ title: 'Password too short', description: 'Use at least 8 characters.', variant: 'destructive' });
+      toast({ title: tr('Mot de passe trop court', 'كلمة المرور قصيرة جدًا'), description: tr('Utilisez au moins 8 caractères.', 'استخدم 8 أحرف على الأقل.'), variant: 'destructive' });
       return;
     }
     if (password !== confirm) {
-      toast({ title: 'Passwords do not match', description: 'Re-type the same password in both fields.', variant: 'destructive' });
+      toast({ title: tr('Les mots de passe ne correspondent pas', 'كلمتا المرور غير متطابقتين'), description: tr('Retapez le même mot de passe dans les deux champs.', 'أعد كتابة نفس كلمة المرور في الحقلين.'), variant: 'destructive' });
       return;
     }
 
@@ -67,14 +68,14 @@ export const CreateAdminDialog: React.FC<Props> = ({ isOpen, onClose, onCreated 
       if (error) throw error;
 
       toast({
-        title: 'Admin account created',
-        description: `Sign in with ${email.trim().toLowerCase()}.`,
+        title: tr('Compte administrateur créé', 'تم إنشاء حساب المسؤول'),
+        description: tr(`Connectez-vous avec ${email.trim().toLowerCase()}.`, `سجّل الدخول بـ ${email.trim().toLowerCase()}.`),
       });
       onCreated(email.trim().toLowerCase());
       reset();
       onClose();
     } catch (err) {
-      toast({ title: 'Could not create admin', description: describeError(err), variant: 'destructive' });
+      toast({ title: tr('Impossible de créer l’administrateur', 'تعذر إنشاء المسؤول'), description: describeError(err), variant: 'destructive' });
     } finally {
       setBusy(false);
     }
@@ -86,30 +87,29 @@ export const CreateAdminDialog: React.FC<Props> = ({ isOpen, onClose, onCreated 
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 gradient-text">
             <ShieldPlus className="w-5 h-5" />
-            Create admin account
+            {tr('Créer le compte administrateur', 'إنشاء حساب المسؤول')}
           </DialogTitle>
           <DialogDescription className="text-gym-gold/60">
-            This sets up the first administrator. It is only available until an admin
-            exists — afterwards this option disappears.
+            {tr('Ceci crée le premier administrateur. Cette option disparaît dès qu’un administrateur existe.', 'هذا ينشئ أول مسؤول. يختفي هذا الخيار بمجرد وجود مسؤول.')}
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={submit} className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <Label htmlFor="admin-first">First name</Label>
+              <Label htmlFor="admin-first">{tr('Prénom', 'الاسم')}</Label>
               <Input id="admin-first" value={firstName} onChange={(e) => setFirstName(e.target.value)}
                      placeholder="Admin" className="gym-input" />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="admin-last">Last name</Label>
+              <Label htmlFor="admin-last">{tr('Nom', 'اللقب')}</Label>
               <Input id="admin-last" value={lastName} onChange={(e) => setLastName(e.target.value)}
                      placeholder="User" className="gym-input" />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="admin-username">Username *</Label>
+            <Label htmlFor="admin-username">{tr('Nom d’utilisateur', 'اسم المستخدم')} *</Label>
             <Input id="admin-username" required value={username}
                    onChange={(e) => setUsername(e.target.value)}
                    autoComplete="username"
@@ -117,39 +117,39 @@ export const CreateAdminDialog: React.FC<Props> = ({ isOpen, onClose, onCreated 
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="admin-email">Email *</Label>
+            <Label htmlFor="admin-email">{tr('E-mail', 'البريد الإلكتروني')} *</Label>
             <Input id="admin-email" type="email" required value={email}
                    onChange={(e) => setEmail(e.target.value)}
                    placeholder="admin@gym.com" className="gym-input" />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="admin-pass">Password *</Label>
+            <Label htmlFor="admin-pass">{tr('Mot de passe', 'كلمة المرور')} *</Label>
             <div className="relative">
               <Input id="admin-pass" type={show ? 'text' : 'password'} required value={password}
                      onChange={(e) => setPassword(e.target.value)}
-                     placeholder="At least 8 characters" className="gym-input pr-10" />
+                     placeholder={tr('Au moins 8 caractères', '8 أحرف على الأقل')} className="gym-input pe-10" />
               <button type="button" onClick={() => setShow(!show)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gym-gold/60 hover:text-gym-gold"
-                      aria-label={show ? 'Hide password' : 'Show password'}>
+                      className="absolute end-3 top-1/2 -translate-y-1/2 text-gym-gold/60 hover:text-gym-gold"
+                      aria-label={show ? tr('Masquer le mot de passe', 'إخفاء كلمة المرور') : tr('Afficher le mot de passe', 'إظهار كلمة المرور')}>
                 {show ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="admin-confirm">Confirm password *</Label>
+            <Label htmlFor="admin-confirm">{tr('Confirmer le mot de passe', 'تأكيد كلمة المرور')} *</Label>
             <Input id="admin-confirm" type={show ? 'text' : 'password'} required value={confirm}
                    onChange={(e) => setConfirm(e.target.value)}
-                   placeholder="Re-type the password" className="gym-input" />
+                   placeholder={tr('Retapez le mot de passe', 'أعد كتابة كلمة المرور')} className="gym-input" />
           </div>
 
           <DialogFooter className="gap-2">
             <Button type="button" variant="ghost" onClick={() => { reset(); onClose(); }} disabled={busy}>
-              Cancel
+              {tr('Annuler', 'إلغاء')}
             </Button>
             <Button type="submit" className="gym-button" disabled={busy}>
-              {busy ? 'Creating…' : 'Create admin'}
+              {busy ? tr('Création…', 'جارٍ الإنشاء…') : tr('Créer l’administrateur', 'إنشاء المسؤول')}
             </Button>
           </DialogFooter>
         </form>

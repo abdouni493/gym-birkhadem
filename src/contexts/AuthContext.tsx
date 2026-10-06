@@ -1,6 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
-import { Language } from '@/lib/i18n';
+import { Language, setCurrentLanguage } from '@/lib/i18n';
 import { supabase, describeError } from '@/lib/supabase';
 import { PermissionSet, PermissionRow, ActionKey } from '@/lib/permissions';
 
@@ -79,6 +79,7 @@ interface WorkerProfileRow {
 const applyDirection = (lang: Language) => {
   document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
   document.documentElement.lang = lang;
+  setCurrentLanguage(lang);
 };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -86,7 +87,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [permissions, setPermissions] = useState<PermissionSet>(PermissionSet.empty());
   const [isLoading, setIsLoading] = useState(true);
-  const [language, setLanguageState] = useState<Language>('en');
+  const [language, setLanguageState] = useState<Language>('fr');
   const [storeSettings, setStoreSettings] = useState<StoreSettings | null>(null);
 
   const refreshStore = useCallback(async () => {
@@ -160,7 +161,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     let active = true;
 
     const stored = localStorage.getItem('gymMonsterLanguage') as Language | null;
-    const lang = stored && ['en', 'fr', 'ar'].includes(stored) ? stored : 'en';
+    const lang: Language = stored === 'ar' ? 'ar' : 'fr';
     setLanguageState(lang);
     applyDirection(lang);
 

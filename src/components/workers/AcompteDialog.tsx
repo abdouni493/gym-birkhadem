@@ -15,6 +15,7 @@ import { formatDZD } from '@/lib/utils';
 import { describeError } from '@/lib/supabase';
 import { Worker, listAcomptes, addAcompte, deleteAcompte } from '@/lib/api/workers';
 import type { AcompteRow } from '@/lib/workerPay';
+import { tr } from '@/lib/i18n';
 
 interface Props {
   isOpen: boolean;
@@ -41,7 +42,7 @@ export const AcompteDialog: React.FC<Props> = ({ isOpen, onClose, worker, onChan
     try {
       setRows(await listAcomptes(worker.id));
     } catch (e) {
-      toast({ title: 'Could not load advances', description: describeError(e), variant: 'destructive' });
+      toast({ title: tr('Impossible de charger les acomptes', 'تعذر تحميل التسبيقات'), description: describeError(e), variant: 'destructive' });
     } finally {
       setLoading(false);
     }
@@ -59,7 +60,7 @@ export const AcompteDialog: React.FC<Props> = ({ isOpen, onClose, worker, onChan
     e.preventDefault();
     const value = Number(amount);
     if (!value || value <= 0) {
-      toast({ title: 'Enter an amount', description: 'The advance must be greater than zero.', variant: 'destructive' });
+      toast({ title: tr('Saisissez un montant', 'أدخل مبلغًا'), description: tr('L’acompte doit être supérieur à zéro.', 'يجب أن يكون التسبيق أكبر من صفر.'), variant: 'destructive' });
       return;
     }
     if (!worker) return;
@@ -67,12 +68,12 @@ export const AcompteDialog: React.FC<Props> = ({ isOpen, onClose, worker, onChan
     setBusy(true);
     try {
       await addAcompte(worker.id, { acompte_date: date, description: desc || null, amount: value });
-      toast({ title: 'Advance recorded', description: `${formatDZD(value)} on ${date}.` });
+      toast({ title: tr('Acompte enregistré', 'تم تسجيل التسبيق'), description: tr(`${formatDZD(value)} le ${date}.`, `${formatDZD(value)} بتاريخ ${date}.`) });
       setAmount(''); setDesc('');
       await load();
       onChanged?.();
     } catch (err) {
-      toast({ title: 'Could not record advance', description: describeError(err), variant: 'destructive' });
+      toast({ title: tr('Impossible d’enregistrer l’acompte', 'تعذر تسجيل التسبيق'), description: describeError(err), variant: 'destructive' });
     } finally {
       setBusy(false);
     }
@@ -81,8 +82,8 @@ export const AcompteDialog: React.FC<Props> = ({ isOpen, onClose, worker, onChan
   const remove = async (row: AcompteRow) => {
     if (row.settled_payment_id) {
       toast({
-        title: 'Already settled',
-        description: 'This advance was deducted by a payment. Delete that payment first.',
+        title: tr('Déjà réglé', 'تمت تسويته'),
+        description: tr('Cet acompte a été déduit par un paiement. Supprimez d’abord ce paiement.', 'تم خصم هذا التسبيق في دفعة. احذف تلك الدفعة أولاً.'),
         variant: 'destructive',
       });
       return;
@@ -91,9 +92,9 @@ export const AcompteDialog: React.FC<Props> = ({ isOpen, onClose, worker, onChan
       await deleteAcompte(row.id);
       await load();
       onChanged?.();
-      toast({ title: 'Advance deleted' });
+      toast({ title: tr('Acompte supprimé', 'تم حذف التسبيق') });
     } catch (e) {
-      toast({ title: 'Could not delete', description: describeError(e), variant: 'destructive' });
+      toast({ title: tr('Suppression impossible', 'تعذر الحذف'), description: describeError(e), variant: 'destructive' });
     }
   };
 
@@ -105,61 +106,61 @@ export const AcompteDialog: React.FC<Props> = ({ isOpen, onClose, worker, onChan
       <DialogContent className="bg-gym-gray border-gym-gold/20 text-gym-gold max-w-lg max-h-[92vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 gradient-text">
-            <HandCoins className="w-5 h-5" />Acompte — {worker?.full_name}
+            <HandCoins className="w-5 h-5" />{tr('Acompte', 'تسبيق')} — {worker?.full_name}
           </DialogTitle>
           <DialogDescription className="text-gym-gold/60">
-            Advances not yet deducted are subtracted from the next payment.
+            {tr('Les acomptes non déduits sont retirés du prochain paiement.', 'تُخصم التسبيقات غير المخصومة من الدفعة القادمة.')}
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={submit} className="space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label>Date *</Label>
+              <Label>{tr('Date', 'التاريخ')} *</Label>
               <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="gym-input" />
             </div>
             <div className="space-y-1.5">
-              <Label>Amount (DZD) *</Label>
+              <Label>{tr('Montant (DA)', 'المبلغ (دج)')} *</Label>
               <Input type="number" min="0" step="0.01" value={amount}
                      onChange={(e) => setAmount(e.target.value)} className="gym-input" placeholder="5000" />
             </div>
           </div>
           <div className="space-y-1.5">
-            <Label>Description</Label>
+            <Label>{tr('Description', 'الوصف')}</Label>
             <Textarea value={desc} onChange={(e) => setDesc(e.target.value)}
-                      className="gym-input min-h-[60px]" placeholder="Reason for the advance…" />
+                      className="gym-input min-h-[60px]" placeholder={tr('Motif de l’acompte…', 'سبب التسبيق…')} />
           </div>
           <Button type="submit" className="w-full gym-button" disabled={busy}>
-            <Plus className="w-4 h-4 mr-2" />{busy ? 'Saving…' : 'Add advance'}
+            <Plus className="w-4 h-4 me-2" />{busy ? tr('Enregistrement…', 'جارٍ الحفظ…') : tr('Ajouter un acompte', 'إضافة تسبيق')}
           </Button>
         </form>
 
         <Separator className="bg-gym-gold/15" />
 
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-gym-gold/80">History</h3>
+          <h3 className="text-sm font-semibold text-gym-gold/80">{tr('Historique', 'السجل')}</h3>
           {pendingTotal > 0 && (
             <Badge className="bg-amber-500/20 text-amber-300 border-0">
-              {formatDZD(pendingTotal)} pending
+              {formatDZD(pendingTotal)} {tr('en attente', 'معلق')}
             </Badge>
           )}
         </div>
 
         <ScrollArea className="max-h-[240px]">
           {loading ? (
-            <p className="text-sm text-gym-gold/40 py-6 text-center">Loading…</p>
+            <p className="text-sm text-gym-gold/40 py-6 text-center">{tr('Chargement…', 'جارٍ التحميل…')}</p>
           ) : rows.length === 0 ? (
-            <p className="text-sm text-gym-gold/40 py-6 text-center">No advances yet.</p>
+            <p className="text-sm text-gym-gold/40 py-6 text-center">{tr('Aucun acompte pour le moment.', 'لا توجد تسبيقات بعد.')}</p>
           ) : (
-            <div className="space-y-2 pr-2">
+            <div className="space-y-2 pe-2">
               {rows.map((r) => (
                 <div key={r.id} className="flex items-start gap-3 p-2.5 rounded-lg border border-gym-gold/15">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <span className="font-semibold text-gym-gold">{formatDZD(r.amount)}</span>
                       {r.settled_payment_id
-                        ? <Badge variant="outline" className="border-green-500/40 text-green-400 text-[10px] h-4">settled</Badge>
-                        : <Badge variant="outline" className="border-amber-500/40 text-amber-300 text-[10px] h-4">pending</Badge>}
+                        ? <Badge variant="outline" className="border-green-500/40 text-green-400 text-[10px] h-4">{tr('réglé', 'مسدد')}</Badge>
+                        : <Badge variant="outline" className="border-amber-500/40 text-amber-300 text-[10px] h-4">{tr('en attente', 'معلق')}</Badge>}
                     </div>
                     <p className="text-xs text-gym-gold/50">{r.acompte_date}</p>
                     {r.description && <p className="text-xs text-gym-gold/60 mt-0.5 break-words">{r.description}</p>}
@@ -167,7 +168,7 @@ export const AcompteDialog: React.FC<Props> = ({ isOpen, onClose, worker, onChan
                   {canDelete && !r.settled_payment_id && (
                     <Button size="icon" variant="ghost" onClick={() => remove(r)}
                             className="h-7 w-7 text-red-400 hover:bg-red-500/10 shrink-0"
-                            aria-label="Delete advance">
+                            aria-label={tr('Supprimer l’acompte', 'حذف التسبيق')}>
                       <Trash2 className="w-3.5 h-3.5" />
                     </Button>
                   )}

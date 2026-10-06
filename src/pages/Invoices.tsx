@@ -21,6 +21,7 @@ import {
   SalesInvoice, SalesInvoiceItem, listSalesInvoices, payInvoice, updateInvoice, deleteInvoice,
 } from '@/lib/api/sales';
 import { ViewToggle, ViewMode } from '@/components/common/ViewToggle';
+import { tr } from '@/lib/i18n';
 
 type DateFilter = 'all' | 'today' | 'week' | 'month' | 'period';
 
@@ -89,20 +90,20 @@ export const Invoices: React.FC = () => {
   const unpaid = useMemo(() => invoices.reduce((s, i) => s + (i.total_amount - i.amount_paid), 0), [invoices]);
 
   const statusBadge = (status: SalesInvoice['status']) => status === 'paid'
-    ? <Badge className="bg-green-500/20 text-green-400 border border-green-500/30">paid</Badge>
-    : <Badge className="bg-red-500/20 text-red-400 border border-red-500/30">debt</Badge>;
+    ? <Badge className="bg-green-500/20 text-green-400 border border-green-500/30">{tr('payée', 'مدفوعة')}</Badge>
+    : <Badge className="bg-red-500/20 text-red-400 border border-red-500/30">{tr('dette', 'دين')}</Badge>;
 
   const doPay = async () => {
     if (!payTarget) return;
     const amount = Number(payAmount) || 0;
-    if (amount <= 0) { toast({ title: 'Invalid amount', variant: 'destructive' }); return; }
+    if (amount <= 0) { toast({ title: tr('Montant invalide', 'مبلغ غير صالح'), variant: 'destructive' }); return; }
     try {
       await payInvoice(payTarget, amount);
-      toast({ title: 'Payment recorded' });
+      toast({ title: tr('Paiement enregistré', 'تم تسجيل الدفع') });
       setPayTarget(null); setPayAmount('');
       await load();
     } catch (e) {
-      toast({ title: 'Could not record payment', description: describeError(e), variant: 'destructive' });
+      toast({ title: tr('Impossible d’enregistrer le paiement', 'تعذر تسجيل الدفع'), description: describeError(e), variant: 'destructive' });
     }
   };
 
@@ -110,11 +111,11 @@ export const Invoices: React.FC = () => {
     if (!toDelete) return;
     try {
       await deleteInvoice(toDelete.id);
-      toast({ title: 'Invoice deleted' });
+      toast({ title: tr('Facture supprimée', 'تم حذف الفاتورة') });
       setToDelete(null);
       await load();
     } catch (e) {
-      toast({ title: 'Could not delete', description: describeError(e), variant: 'destructive' });
+      toast({ title: tr('Suppression impossible', 'تعذر الحذف'), description: describeError(e), variant: 'destructive' });
     }
   };
 
@@ -147,11 +148,11 @@ export const Invoices: React.FC = () => {
         amount_paid: Number(editPaid) || 0,
         items: editItems.map((it) => ({ id: it.id, quantity: it.quantity, unit_price: it.unit_price })),
       });
-      toast({ title: 'Invoice updated' });
+      toast({ title: tr('Facture modifiée', 'تم تعديل الفاتورة') });
       setEditInvoice(null);
       await load();
     } catch (e) {
-      toast({ title: 'Could not update', description: describeError(e), variant: 'destructive' });
+      toast({ title: tr('Modification impossible', 'تعذر التعديل'), description: describeError(e), variant: 'destructive' });
     }
   };
 
@@ -159,10 +160,10 @@ export const Invoices: React.FC = () => {
     const remaining = inv.total_amount - inv.amount_paid;
     return (
       <div className="flex gap-1 flex-wrap">
-        <Button size="sm" variant="ghost" onClick={() => setDetailsInvoice(inv)} className="text-blue-400 hover:bg-blue-500/10" title="View"><Eye className="w-4 h-4" /></Button>
-        {can('invoices', 'edit') && <Button size="sm" variant="ghost" onClick={() => openEdit(inv)} className="text-gym-gold hover:bg-gym-gold/10" title="Edit"><Pencil className="w-4 h-4" /></Button>}
-        {remaining > 0 && can('invoices', 'edit') && <Button size="sm" variant="ghost" onClick={() => { setPayTarget(inv); setPayAmount(String(remaining)); }} className="text-green-400 hover:bg-green-500/10" title="Pay debt"><DollarSign className="w-4 h-4" /></Button>}
-        {can('invoices', 'delete') && <Button size="sm" variant="ghost" onClick={() => setToDelete(inv)} className="text-red-400 hover:bg-red-500/10" title="Delete"><Trash2 className="w-4 h-4" /></Button>}
+        <Button size="sm" variant="ghost" onClick={() => setDetailsInvoice(inv)} className="text-blue-400 hover:bg-blue-500/10" title={tr('Voir', 'عرض')}><Eye className="w-4 h-4" /></Button>
+        {can('invoices', 'edit') && <Button size="sm" variant="ghost" onClick={() => openEdit(inv)} className="text-gym-gold hover:bg-gym-gold/10" title={tr('Modifier', 'تعديل')}><Pencil className="w-4 h-4" /></Button>}
+        {remaining > 0 && can('invoices', 'edit') && <Button size="sm" variant="ghost" onClick={() => { setPayTarget(inv); setPayAmount(String(remaining)); }} className="text-green-400 hover:bg-green-500/10" title={tr('Payer la dette', 'تسديد الدين')}><DollarSign className="w-4 h-4" /></Button>}
+        {can('invoices', 'delete') && <Button size="sm" variant="ghost" onClick={() => setToDelete(inv)} className="text-red-400 hover:bg-red-500/10" title={tr('Supprimer', 'حذف')}><Trash2 className="w-4 h-4" /></Button>}
       </div>
     );
   };
@@ -171,21 +172,21 @@ export const Invoices: React.FC = () => {
     <div className="min-h-screen bg-gym-black text-gym-gold p-6">
       <div className="max-w-7xl mx-auto space-y-6">
         <div>
-          <h1 className="text-3xl font-bold gradient-text">Sales</h1>
-          <p className="text-gym-gold/60 mt-1">Sales invoices and debts.</p>
+          <h1 className="text-3xl font-bold gradient-text">{tr('Ventes', 'المبيعات')}</h1>
+          <p className="text-gym-gold/60 mt-1">{tr('Factures de vente et dettes.', 'فواتير البيع والديون.')}</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Card className="bg-gym-gray border-gym-gold/20"><CardContent className="p-5 flex items-center justify-between">
-            <div><p className="text-gym-gold/60 text-sm">Invoices</p><p className="text-2xl font-bold text-gym-gold">{invoices.length}</p></div>
+            <div><p className="text-gym-gold/60 text-sm">{tr('Factures', 'الفواتير')}</p><p className="text-2xl font-bold text-gym-gold">{invoices.length}</p></div>
             <Receipt className="w-8 h-8 text-blue-400" />
           </CardContent></Card>
           <Card className="bg-gym-gray border-gym-gold/20"><CardContent className="p-5 flex items-center justify-between">
-            <div><p className="text-gym-gold/60 text-sm">Revenue</p><p className="text-2xl font-bold text-green-400">{formatDZD(totalRevenue)}</p></div>
+            <div><p className="text-gym-gold/60 text-sm">{tr('Recettes', 'الإيرادات')}</p><p className="text-2xl font-bold text-green-400">{formatDZD(totalRevenue)}</p></div>
             <TrendingUp className="w-8 h-8 text-green-400" />
           </CardContent></Card>
           <Card className="bg-gym-gray border-gym-gold/20"><CardContent className="p-5 flex items-center justify-between">
-            <div><p className="text-gym-gold/60 text-sm">Unpaid</p><p className="text-2xl font-bold text-red-400">{formatDZD(unpaid)}</p></div>
+            <div><p className="text-gym-gold/60 text-sm">{tr('Impayé', 'غير مدفوع')}</p><p className="text-2xl font-bold text-red-400">{formatDZD(unpaid)}</p></div>
             <Calendar className="w-8 h-8 text-orange-400" />
           </CardContent></Card>
         </div>
@@ -194,45 +195,45 @@ export const Invoices: React.FC = () => {
           <CardContent className="p-4 space-y-3">
             <div className="flex flex-col lg:flex-row gap-3">
               <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gym-gold/50 w-4 h-4" />
-                <Input placeholder="Search customer…" value={search} onChange={(e) => setSearch(e.target.value)}
-                       className="pl-10 bg-gym-black border-gym-gold/30 text-gym-gold" />
+                <Search className="absolute start-3 top-1/2 -translate-y-1/2 text-gym-gold/50 w-4 h-4" />
+                <Input placeholder={tr('Rechercher un client…', 'ابحث عن زبون…')} value={search} onChange={(e) => setSearch(e.target.value)}
+                       className="ps-10 bg-gym-black border-gym-gold/30 text-gym-gold" />
               </div>
               <Select value={dateFilter} onValueChange={(v) => setDateFilter(v as DateFilter)}>
                 <SelectTrigger className="w-full lg:w-44 bg-gym-black border-gym-gold/30 text-gym-gold"><SelectValue /></SelectTrigger>
                 <SelectContent className="bg-gym-gray border-gym-gold/30 text-gym-gold">
-                  <SelectItem value="all">All dates</SelectItem>
-                  <SelectItem value="today">Today</SelectItem>
-                  <SelectItem value="week">Last week</SelectItem>
-                  <SelectItem value="month">Last month</SelectItem>
-                  <SelectItem value="period">Period</SelectItem>
+                  <SelectItem value="all">{tr('Toutes les dates', 'كل التواريخ')}</SelectItem>
+                  <SelectItem value="today">{tr('Aujourd’hui', 'اليوم')}</SelectItem>
+                  <SelectItem value="week">{tr('Semaine dernière', 'الأسبوع الماضي')}</SelectItem>
+                  <SelectItem value="month">{tr('Mois dernier', 'الشهر الماضي')}</SelectItem>
+                  <SelectItem value="period">{tr('Période', 'الفترة')}</SelectItem>
                 </SelectContent>
               </Select>
-              <ViewToggle mode={viewMode} onChange={setViewMode} cardsLabel="Cards" tableLabel="Table" />
+              <ViewToggle mode={viewMode} onChange={setViewMode} cardsLabel={tr('Cartes', 'بطاقات')} tableLabel={tr('Tableau', 'جدول')} />
             </div>
             {dateFilter === 'period' && (
               <div className="flex flex-col sm:flex-row gap-3">
-                <div className="flex-1"><Label className="text-xs">Start</Label><Input type="date" value={periodStart} onChange={(e) => setPeriodStart(e.target.value)} className="bg-gym-black border-gym-gold/30 text-gym-gold mt-1" /></div>
-                <div className="flex-1"><Label className="text-xs">End</Label><Input type="date" value={periodEnd} onChange={(e) => setPeriodEnd(e.target.value)} className="bg-gym-black border-gym-gold/30 text-gym-gold mt-1" /></div>
+                <div className="flex-1"><Label className="text-xs">{tr('Début', 'البداية')}</Label><Input type="date" value={periodStart} onChange={(e) => setPeriodStart(e.target.value)} className="bg-gym-black border-gym-gold/30 text-gym-gold mt-1" /></div>
+                <div className="flex-1"><Label className="text-xs">{tr('Fin', 'النهاية')}</Label><Input type="date" value={periodEnd} onChange={(e) => setPeriodEnd(e.target.value)} className="bg-gym-black border-gym-gold/30 text-gym-gold mt-1" /></div>
               </div>
             )}
           </CardContent>
         </Card>
 
         {loading ? (
-          <Card className="bg-gym-gray border-gym-gold/20"><CardContent className="p-12 text-center text-gym-gold/40">Loading…</CardContent></Card>
+          <Card className="bg-gym-gray border-gym-gold/20"><CardContent className="p-12 text-center text-gym-gold/40">{tr('Chargement…', 'جارٍ التحميل…')}</CardContent></Card>
         ) : error ? (
           <Card className="bg-gym-gray border-red-500/30">
             <CardContent className="p-8 text-center space-y-3">
-              <p className="text-red-400 font-medium">Could not load invoices</p>
+              <p className="text-red-400 font-medium">{tr('Impossible de charger les factures', 'تعذر تحميل الفواتير')}</p>
               <p className="text-sm text-gym-gold/50">{error}</p>
-              <Button variant="outline" onClick={load} className="border-gym-gold/30 text-gym-gold hover:bg-gym-gold/10">Try again</Button>
+              <Button variant="outline" onClick={load} className="border-gym-gold/30 text-gym-gold hover:bg-gym-gold/10">{tr('Réessayer', 'إعادة المحاولة')}</Button>
             </CardContent>
           </Card>
         ) : filtered.length === 0 ? (
           <Card className="bg-gym-gray border-gym-gold/20"><CardContent className="p-12 text-center">
             <Receipt className="w-12 h-12 mx-auto mb-3 text-gym-gold/20" />
-            <p className="text-gym-gold/60">No invoices found.</p>
+            <p className="text-gym-gold/60">{tr('Aucune facture trouvée.', 'لم يتم العثور على فواتير.')}</p>
           </CardContent></Card>
         ) : viewMode === 'cards' ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -248,10 +249,10 @@ export const Invoices: React.FC = () => {
                     {statusBadge(inv.status)}
                   </div></CardHeader>
                   <CardContent className="space-y-2">
-                    <p className="text-gym-gold/60 text-xs">{(inv.sales_invoice_items ?? []).length} items</p>
-                    <div className="flex justify-between text-sm"><span className="text-gym-gold/60">Total</span><span className="text-gym-gold font-semibold">{formatDZD(inv.total_amount)}</span></div>
-                    <div className="flex justify-between text-sm"><span className="text-gym-gold/60">Paid</span><span className="text-green-400">{formatDZD(inv.amount_paid)}</span></div>
-                    {remaining > 0 && <div className="flex justify-between text-sm"><span className="text-gym-gold/60">Remaining</span><span className="text-red-400">{formatDZD(remaining)}</span></div>}
+                    <p className="text-gym-gold/60 text-xs">{(inv.sales_invoice_items ?? []).length} {tr('article(s)', 'عنصر')}</p>
+                    <div className="flex justify-between text-sm"><span className="text-gym-gold/60">{tr('Total', 'المجموع')}</span><span className="text-gym-gold font-semibold">{formatDZD(inv.total_amount)}</span></div>
+                    <div className="flex justify-between text-sm"><span className="text-gym-gold/60">{tr('Payé', 'مدفوع')}</span><span className="text-green-400">{formatDZD(inv.amount_paid)}</span></div>
+                    {remaining > 0 && <div className="flex justify-between text-sm"><span className="text-gym-gold/60">{tr('Reste', 'الباقي')}</span><span className="text-red-400">{formatDZD(remaining)}</span></div>}
                     <div className="pt-2 border-t border-gym-gold/10">{actions(inv)}</div>
                   </CardContent>
                 </Card>
@@ -262,13 +263,13 @@ export const Invoices: React.FC = () => {
           <Card className="bg-gym-gray border-gym-gold/20"><CardContent className="p-0 overflow-x-auto">
             <Table>
               <TableHeader><TableRow className="border-gym-gold/20 hover:bg-gym-gold/5">
-                <TableHead className="text-gym-gold">Invoice</TableHead>
-                <TableHead className="text-gym-gold">Customer</TableHead>
-                <TableHead className="text-gym-gold">Date</TableHead>
-                <TableHead className="text-gym-gold text-right">Total</TableHead>
-                <TableHead className="text-gym-gold text-right">Remaining</TableHead>
-                <TableHead className="text-gym-gold">Status</TableHead>
-                <TableHead className="text-gym-gold">Actions</TableHead>
+                <TableHead className="text-gym-gold">{tr('Facture', 'فاتورة')}</TableHead>
+                <TableHead className="text-gym-gold">{tr('Client', 'الزبون')}</TableHead>
+                <TableHead className="text-gym-gold">{tr('Date', 'التاريخ')}</TableHead>
+                <TableHead className="text-gym-gold text-end">{tr('Total', 'المجموع')}</TableHead>
+                <TableHead className="text-gym-gold text-end">{tr('Reste', 'الباقي')}</TableHead>
+                <TableHead className="text-gym-gold">{tr('Statut', 'الحالة')}</TableHead>
+                <TableHead className="text-gym-gold">{tr('Actions', 'الإجراءات')}</TableHead>
               </TableRow></TableHeader>
               <TableBody>
                 {filtered.map((inv) => (
@@ -276,8 +277,8 @@ export const Invoices: React.FC = () => {
                     <TableCell className="text-gym-gold font-mono">{inv.invoice_number}</TableCell>
                     <TableCell className="text-gym-gold">{inv.customer_name}</TableCell>
                     <TableCell className="text-gym-gold">{inv.creation_date}</TableCell>
-                    <TableCell className="text-gym-gold text-right">{formatDZD(inv.total_amount)}</TableCell>
-                    <TableCell className="text-right text-red-400">{formatDZD(inv.total_amount - inv.amount_paid)}</TableCell>
+                    <TableCell className="text-gym-gold text-end">{formatDZD(inv.total_amount)}</TableCell>
+                    <TableCell className="text-end text-red-400">{formatDZD(inv.total_amount - inv.amount_paid)}</TableCell>
                     <TableCell>{statusBadge(inv.status)}</TableCell>
                     <TableCell>{actions(inv)}</TableCell>
                   </TableRow>
@@ -291,41 +292,41 @@ export const Invoices: React.FC = () => {
       {/* Details */}
       <Dialog open={!!detailsInvoice} onOpenChange={(o) => !o && setDetailsInvoice(null)}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-gym-gray border-gym-gold/30 text-gym-gold">
-          <DialogHeader><DialogTitle className="gradient-text">Invoice details</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle className="gradient-text">{tr('Détails de la facture', 'تفاصيل الفاتورة')}</DialogTitle></DialogHeader>
           {detailsInvoice && (
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-3 text-sm">
-                <div><p className="text-gym-gold/60 text-xs">Invoice</p><p className="font-mono font-semibold">{detailsInvoice.invoice_number}</p></div>
-                <div><p className="text-gym-gold/60 text-xs">Date</p><p>{detailsInvoice.creation_date}</p></div>
-                <div><p className="text-gym-gold/60 text-xs">Customer</p><p>{detailsInvoice.customer_name}{detailsInvoice.client_phone ? ` • ${detailsInvoice.client_phone}` : ''}</p></div>
-                <div><p className="text-gym-gold/60 text-xs">Status</p><div className="mt-1">{statusBadge(detailsInvoice.status)}</div></div>
+                <div><p className="text-gym-gold/60 text-xs">{tr('Facture', 'فاتورة')}</p><p className="font-mono font-semibold">{detailsInvoice.invoice_number}</p></div>
+                <div><p className="text-gym-gold/60 text-xs">{tr('Date', 'التاريخ')}</p><p>{detailsInvoice.creation_date}</p></div>
+                <div><p className="text-gym-gold/60 text-xs">{tr('Client', 'الزبون')}</p><p>{detailsInvoice.customer_name}{detailsInvoice.client_phone ? ` • ${detailsInvoice.client_phone}` : ''}</p></div>
+                <div><p className="text-gym-gold/60 text-xs">{tr('Statut', 'الحالة')}</p><div className="mt-1">{statusBadge(detailsInvoice.status)}</div></div>
               </div>
               <div className="overflow-x-auto border border-gym-gold/15 rounded-lg">
                 <Table>
                   <TableHeader><TableRow className="border-gym-gold/20">
-                    <TableHead className="text-gym-gold">Product</TableHead>
-                    <TableHead className="text-gym-gold text-right">Qty</TableHead>
-                    <TableHead className="text-gym-gold text-right">Unit</TableHead>
-                    <TableHead className="text-gym-gold text-right">Total</TableHead>
+                    <TableHead className="text-gym-gold">{tr('Produit', 'المنتج')}</TableHead>
+                    <TableHead className="text-gym-gold text-end">{tr('Qté', 'الكمية')}</TableHead>
+                    <TableHead className="text-gym-gold text-end">{tr('P.U.', 'سعر الوحدة')}</TableHead>
+                    <TableHead className="text-gym-gold text-end">{tr('Total', 'المجموع')}</TableHead>
                   </TableRow></TableHeader>
                   <TableBody>
                     {(detailsInvoice.sales_invoice_items ?? []).map((it) => (
                       <TableRow key={it.id} className="border-gym-gold/10">
                         <TableCell className="text-gym-gold">{it.name}</TableCell>
-                        <TableCell className="text-gym-gold text-right">{it.quantity}</TableCell>
-                        <TableCell className="text-gym-gold text-right">{formatDZD(it.unit_price)}</TableCell>
-                        <TableCell className="text-gym-gold text-right font-semibold">{formatDZD(it.total)}</TableCell>
+                        <TableCell className="text-gym-gold text-end">{it.quantity}</TableCell>
+                        <TableCell className="text-gym-gold text-end">{formatDZD(it.unit_price)}</TableCell>
+                        <TableCell className="text-gym-gold text-end font-semibold">{formatDZD(it.total)}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
                 </Table>
               </div>
               <div className="p-4 bg-gym-gold/10 rounded-lg border border-gym-gold/20 space-y-1">
-                <div className="flex justify-between text-gym-gold/80"><span>Subtotal</span><span>{formatDZD(detailsInvoice.subtotal)}</span></div>
-                {detailsInvoice.discount > 0 && <div className="flex justify-between text-gym-gold/80"><span>Discount</span><span>- {formatDZD(detailsInvoice.discount)}</span></div>}
-                <div className="flex justify-between text-gym-gold font-bold"><span>Total</span><span>{formatDZD(detailsInvoice.total_amount)}</span></div>
-                <div className="flex justify-between text-green-400"><span>Paid</span><span>{formatDZD(detailsInvoice.amount_paid)}</span></div>
-                <div className="flex justify-between text-red-400"><span>Remaining</span><span>{formatDZD(detailsInvoice.total_amount - detailsInvoice.amount_paid)}</span></div>
+                <div className="flex justify-between text-gym-gold/80"><span>{tr('Sous-total', 'المجموع الفرعي')}</span><span>{formatDZD(detailsInvoice.subtotal)}</span></div>
+                {detailsInvoice.discount > 0 && <div className="flex justify-between text-gym-gold/80"><span>{tr('Remise', 'الخصم')}</span><span>- {formatDZD(detailsInvoice.discount)}</span></div>}
+                <div className="flex justify-between text-gym-gold font-bold"><span>{tr('Total', 'المجموع')}</span><span>{formatDZD(detailsInvoice.total_amount)}</span></div>
+                <div className="flex justify-between text-green-400"><span>{tr('Payé', 'مدفوع')}</span><span>{formatDZD(detailsInvoice.amount_paid)}</span></div>
+                <div className="flex justify-between text-red-400"><span>{tr('Reste', 'الباقي')}</span><span>{formatDZD(detailsInvoice.total_amount - detailsInvoice.amount_paid)}</span></div>
               </div>
             </div>
           )}
@@ -335,15 +336,15 @@ export const Invoices: React.FC = () => {
       {/* Edit */}
       <Dialog open={!!editInvoice} onOpenChange={(o) => !o && setEditInvoice(null)}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-gym-gray border-gym-gold/30 text-gym-gold">
-          <DialogHeader><DialogTitle className="gradient-text">Edit invoice</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle className="gradient-text">{tr('Modifier la facture', 'تعديل الفاتورة')}</DialogTitle></DialogHeader>
           {editInvoice && (
             <div className="space-y-4">
               <div>
-                <Label>Client</Label>
+                <Label>{tr('Client', 'الزبون')}</Label>
                 <Select value={editClientId} onValueChange={setEditClientId}>
                   <SelectTrigger className="bg-gym-black border-gym-gold/30 text-gym-gold mt-1"><SelectValue /></SelectTrigger>
                   <SelectContent className="bg-gym-gray border-gym-gold/30 text-gym-gold">
-                    <SelectItem value="passage">Client de passage</SelectItem>
+                    <SelectItem value="passage">{tr('Client de passage', 'زبون عابر')}</SelectItem>
                     {clients.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
                   </SelectContent>
                 </Select>
@@ -351,10 +352,10 @@ export const Invoices: React.FC = () => {
               <div className="overflow-x-auto border border-gym-gold/15 rounded-lg">
                 <Table>
                   <TableHeader><TableRow className="border-gym-gold/20">
-                    <TableHead className="text-gym-gold">Product</TableHead>
-                    <TableHead className="text-gym-gold w-24">Qty</TableHead>
-                    <TableHead className="text-gym-gold w-28">Unit</TableHead>
-                    <TableHead className="text-gym-gold text-right">Total</TableHead>
+                    <TableHead className="text-gym-gold">{tr('Produit', 'المنتج')}</TableHead>
+                    <TableHead className="text-gym-gold w-24">{tr('Qté', 'الكمية')}</TableHead>
+                    <TableHead className="text-gym-gold w-28">{tr('P.U.', 'سعر الوحدة')}</TableHead>
+                    <TableHead className="text-gym-gold text-end">{tr('Total', 'المجموع')}</TableHead>
                   </TableRow></TableHeader>
                   <TableBody>
                     {editItems.map((it) => (
@@ -362,25 +363,25 @@ export const Invoices: React.FC = () => {
                         <TableCell className="text-gym-gold">{it.name}</TableCell>
                         <TableCell><Input type="number" min="1" value={it.quantity} onChange={(e) => updateEditItem(it.id, 'quantity', e.target.value)} className="bg-gym-black border-gym-gold/30 text-gym-gold h-8 w-20" /></TableCell>
                         <TableCell><Input type="number" min="0" step="0.01" value={it.unit_price} onChange={(e) => updateEditItem(it.id, 'unit_price', e.target.value)} className="bg-gym-black border-gym-gold/30 text-gym-gold h-8 w-24" /></TableCell>
-                        <TableCell className="text-gym-gold text-right font-semibold">{formatDZD(it.unit_price * it.quantity)}</TableCell>
+                        <TableCell className="text-gym-gold text-end font-semibold">{formatDZD(it.unit_price * it.quantity)}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
                 </Table>
               </div>
               <div className="grid grid-cols-2 gap-3">
-                <div><Label>Discount</Label><Input type="number" min="0" step="0.01" value={editDiscount} onChange={(e) => setEditDiscount(e.target.value)} className="bg-gym-black border-gym-gold/30 text-gym-gold mt-1" /></div>
-                <div><Label>Paid</Label><Input type="number" min="0" step="0.01" value={editPaid} onChange={(e) => setEditPaid(e.target.value)} className="bg-gym-black border-gym-gold/30 text-gym-gold mt-1" /></div>
+                <div><Label>{tr('Remise', 'الخصم')}</Label><Input type="number" min="0" step="0.01" value={editDiscount} onChange={(e) => setEditDiscount(e.target.value)} className="bg-gym-black border-gym-gold/30 text-gym-gold mt-1" /></div>
+                <div><Label>{tr('Payé', 'مدفوع')}</Label><Input type="number" min="0" step="0.01" value={editPaid} onChange={(e) => setEditPaid(e.target.value)} className="bg-gym-black border-gym-gold/30 text-gym-gold mt-1" /></div>
               </div>
               <div className="p-3 bg-gym-gold/10 rounded-lg border border-gym-gold/20 space-y-1 text-sm">
-                <div className="flex justify-between text-gym-gold font-bold"><span>Total</span><span>{formatDZD(editTotal)}</span></div>
-                <div className="flex justify-between text-red-400"><span>Remaining</span><span>{formatDZD(Math.max(0, editTotal - (Number(editPaid) || 0)))}</span></div>
+                <div className="flex justify-between text-gym-gold font-bold"><span>{tr('Total', 'المجموع')}</span><span>{formatDZD(editTotal)}</span></div>
+                <div className="flex justify-between text-red-400"><span>{tr('Reste', 'الباقي')}</span><span>{formatDZD(Math.max(0, editTotal - (Number(editPaid) || 0)))}</span></div>
               </div>
             </div>
           )}
           <DialogFooter className="gap-2">
-            <Button variant="ghost" onClick={() => setEditInvoice(null)}>Cancel</Button>
-            <Button onClick={saveEdit} className="gym-button">Save</Button>
+            <Button variant="ghost" onClick={() => setEditInvoice(null)}>{tr('Annuler', 'إلغاء')}</Button>
+            <Button onClick={saveEdit} className="gym-button">{tr('Enregistrer', 'حفظ')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -388,21 +389,21 @@ export const Invoices: React.FC = () => {
       {/* Pay */}
       <Dialog open={!!payTarget} onOpenChange={(o) => { if (!o) { setPayTarget(null); setPayAmount(''); } }}>
         <DialogContent className="max-w-md bg-gym-gray border-gym-gold/30 text-gym-gold">
-          <DialogHeader><DialogTitle className="gradient-text">Pay debt</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle className="gradient-text">{tr('Payer la dette', 'تسديد الدين')}</DialogTitle></DialogHeader>
           {payTarget && (
             <div className="space-y-4">
               <div className="grid grid-cols-3 gap-2 text-center text-sm">
-                <div className="bg-gym-gold/5 rounded p-3"><p className="text-gym-gold/60 text-xs">Total</p><p className="font-semibold">{formatDZD(payTarget.total_amount)}</p></div>
-                <div className="bg-gym-gold/5 rounded p-3"><p className="text-gym-gold/60 text-xs">Paid</p><p className="text-green-400 font-semibold">{formatDZD(payTarget.amount_paid)}</p></div>
-                <div className="bg-gym-gold/5 rounded p-3"><p className="text-gym-gold/60 text-xs">Remaining</p><p className="text-red-400 font-semibold">{formatDZD(payTarget.total_amount - payTarget.amount_paid)}</p></div>
+                <div className="bg-gym-gold/5 rounded p-3"><p className="text-gym-gold/60 text-xs">{tr('Total', 'المجموع')}</p><p className="font-semibold">{formatDZD(payTarget.total_amount)}</p></div>
+                <div className="bg-gym-gold/5 rounded p-3"><p className="text-gym-gold/60 text-xs">{tr('Payé', 'مدفوع')}</p><p className="text-green-400 font-semibold">{formatDZD(payTarget.amount_paid)}</p></div>
+                <div className="bg-gym-gold/5 rounded p-3"><p className="text-gym-gold/60 text-xs">{tr('Reste', 'الباقي')}</p><p className="text-red-400 font-semibold">{formatDZD(payTarget.total_amount - payTarget.amount_paid)}</p></div>
               </div>
               <div>
-                <Label>This payment</Label>
+                <Label>{tr('Ce paiement', 'هذا الدفع')}</Label>
                 <Input type="number" min="0" step="0.01" value={payAmount} onChange={(e) => setPayAmount(e.target.value)} className="bg-gym-black border-gym-gold/30 text-gym-gold mt-1" />
               </div>
               <DialogFooter className="gap-2">
-                <Button variant="ghost" onClick={() => { setPayTarget(null); setPayAmount(''); }}>Cancel</Button>
-                <Button onClick={doPay} className="gym-button"><DollarSign className="w-4 h-4 mr-2" />Save payment</Button>
+                <Button variant="ghost" onClick={() => { setPayTarget(null); setPayAmount(''); }}>{tr('Annuler', 'إلغاء')}</Button>
+                <Button onClick={doPay} className="gym-button"><DollarSign className="w-4 h-4 me-2" />{tr('Enregistrer le paiement', 'حفظ الدفع')}</Button>
               </DialogFooter>
             </div>
           )}
@@ -412,12 +413,12 @@ export const Invoices: React.FC = () => {
       <AlertDialog open={toDelete !== null} onOpenChange={(o) => !o && setToDelete(null)}>
         <AlertDialogContent className="bg-gym-gray border-gym-gold/20 text-gym-gold">
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete {toDelete?.invoice_number}?</AlertDialogTitle>
-            <AlertDialogDescription className="text-gym-gold/60">This cannot be undone.</AlertDialogDescription>
+            <AlertDialogTitle>{tr('Supprimer', 'حذف')} {toDelete?.invoice_number} ?</AlertDialogTitle>
+            <AlertDialogDescription className="text-gym-gold/60">{tr('Cette action est irréversible.', 'لا يمكن التراجع عن هذا الإجراء.')}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="bg-transparent border-gym-gold/30 text-gym-gold hover:bg-gym-gold/10">Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete} className="bg-red-600 text-white hover:bg-red-700">Delete</AlertDialogAction>
+            <AlertDialogCancel className="bg-transparent border-gym-gold/30 text-gym-gold hover:bg-gym-gold/10">{tr('Annuler', 'إلغاء')}</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-red-600 text-white hover:bg-red-700">{tr('Supprimer', 'حذف')}</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

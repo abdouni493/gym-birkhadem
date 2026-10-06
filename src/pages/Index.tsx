@@ -2,6 +2,7 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { tr } from '@/lib/i18n';
 
 const Index = () => {
   const navigate = useNavigate();
@@ -24,7 +25,7 @@ const Index = () => {
           <span className="text-2xl font-bold text-gym-black">G</span>
         </div>
         <div className="w-8 h-8 border-2 border-gym-gold border-t-transparent rounded-full animate-spin mx-auto"></div>
-        <p className="text-gym-gold/60 mt-4">Loading Gym Monster...</p>
+        <p className="text-gym-gold/60 mt-4">{tr('Chargement…', 'جارٍ التحميل…')}</p>
       </div>
     </div>
   );

@@ -179,14 +179,14 @@ export const SubscriptionDialog: React.FC<Props> = ({ isOpen, onClose, athlete, 
               <Separator className="bg-gym-gold/15" />
               <h3 className="text-sm font-semibold text-gym-gold/80">{t('athX.history')}</h3>
               <ScrollArea className="max-h-[180px]">
-                <div className="space-y-1.5 pr-2">
+                <div className="space-y-1.5 pe-2">
                   {history.map((h) => (
                     <div key={h.id} className="flex items-center justify-between p-2.5 rounded-lg border border-gym-gold/15">
                       <div className="min-w-0">
                         <p className="text-sm truncate">{h.name}</p>
                         <p className="text-xs text-gym-gold/40">{h.payment_date}{h.expiry_date && ` → ${h.expiry_date}`}</p>
                       </div>
-                      <div className="text-right shrink-0">
+                      <div className="text-end shrink-0">
                         <p className="text-xs">{formatDZD(h.amount_paid)} / {formatDZD(h.price)}</p>
                         {h.remaining > 0
                           ? <Badge variant="outline" className="border-red-500/40 text-red-400 text-[10px] h-4">{formatDZD(h.remaining)} {t('athX.due')}</Badge>

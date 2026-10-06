@@ -22,6 +22,7 @@ import {
   computeUnpaidPeriods, computePayment, unsettled,
   AcompteRow, AbsenceRow, PaymentRow, UnpaidPeriod,
 } from '@/lib/workerPay';
+import { tr } from '@/lib/i18n';
 
 interface Props {
   isOpen: boolean;
@@ -62,7 +63,7 @@ export const WorkerPaymentDialog: React.FC<Props> = ({ isOpen, onClose, worker, 
       ]);
       setAcomptes(ac); setAbsences(ab); setPayments(pay);
     } catch (e) {
-      toast({ title: 'Could not load payment data', description: describeError(e), variant: 'destructive' });
+      toast({ title: tr('Impossible de charger les données de paiement', 'تعذر تحميل بيانات الدفع'), description: describeError(e), variant: 'destructive' });
     } finally {
       setLoading(false);
     }
@@ -123,11 +124,11 @@ export const WorkerPaymentDialog: React.FC<Props> = ({ isOpen, onClose, worker, 
   const submit = async () => {
     if (!worker) return;
     if (selectedPeriods.length === 0) {
-      toast({ title: 'Nothing selected', description: 'Choose at least one period to pay.', variant: 'destructive' });
+      toast({ title: tr('Rien de sélectionné', 'لم يتم تحديد شيء'), description: tr('Choisissez au moins une période à payer.', 'اختر فترة واحدة على الأقل للدفع.'), variant: 'destructive' });
       return;
     }
     if (finalAmount < 0) {
-      toast({ title: 'Invalid amount', description: 'The amount cannot be negative.', variant: 'destructive' });
+      toast({ title: tr('Montant invalide', 'مبلغ غير صالح'), description: tr('Le montant ne peut pas être négatif.', 'لا يمكن أن يكون المبلغ سالبًا.'), variant: 'destructive' });
       return;
     }
 
@@ -147,11 +148,11 @@ export const WorkerPaymentDialog: React.FC<Props> = ({ isOpen, onClose, worker, 
         acompteIds: openAcomptes.map((a) => a.id),
         absenceIds: openAbsences.map((a) => a.id),
       });
-      toast({ title: 'Payment recorded', description: `${formatDZD(finalAmount)} paid to ${worker.full_name}.` });
+      toast({ title: tr('Paiement enregistré', 'تم تسجيل الدفع'), description: tr(`${formatDZD(finalAmount)} payé à ${worker.full_name}.`, `تم دفع ${formatDZD(finalAmount)} إلى ${worker.full_name}.`) });
       onSaved?.();
       onClose();
     } catch (e) {
-      toast({ title: 'Could not record payment', description: describeError(e), variant: 'destructive' });
+      toast({ title: tr('Impossible d’enregistrer le paiement', 'تعذر تسجيل الدفع'), description: describeError(e), variant: 'destructive' });
     } finally {
       setSaving(false);
     }
@@ -160,11 +161,11 @@ export const WorkerPaymentDialog: React.FC<Props> = ({ isOpen, onClose, worker, 
   const removePayment = async (id: string) => {
     try {
       await deletePayment(id);
-      toast({ title: 'Payment deleted', description: 'Its advances and absences are pending again.' });
+      toast({ title: tr('Paiement supprimé', 'تم حذف الدفعة'), description: tr('Ses acomptes et absences redeviennent en attente.', 'تعود تسبيقاته وغياباته معلقة.') });
       await load();
       onSaved?.();
     } catch (e) {
-      toast({ title: 'Could not delete payment', description: describeError(e), variant: 'destructive' });
+      toast({ title: tr('Impossible de supprimer le paiement', 'تعذر حذف الدفعة'), description: describeError(e), variant: 'destructive' });
     }
   };
 
@@ -175,10 +176,10 @@ export const WorkerPaymentDialog: React.FC<Props> = ({ isOpen, onClose, worker, 
       <DialogContent className="bg-gym-gray border-gym-gold/20 text-gym-gold max-w-3xl max-h-[92vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 gradient-text">
-            <Wallet className="w-5 h-5" />Payment — {worker?.full_name}
+            <Wallet className="w-5 h-5" />{tr('Paiement', 'الدفع')} — {worker?.full_name}
           </DialogTitle>
           <DialogDescription className="text-gym-gold/60">
-            Unpaid {unit}s, minus advances and absence costs not yet deducted.
+            {unit === 'day' ? tr('Jours non payés, moins les acomptes et coûts d’absence non déduits.', 'الأيام غير المدفوعة، مطروحًا منها التسبيقات وتكاليف الغياب غير المخصومة.') : tr('Mois non payés, moins les acomptes et coûts d’absence non déduits.', 'الأشهر غير المدفوعة، مطروحًا منها التسبيقات وتكاليف الغياب غير المخصومة.')}
           </DialogDescription>
         </DialogHeader>
 
@@ -186,21 +187,21 @@ export const WorkerPaymentDialog: React.FC<Props> = ({ isOpen, onClose, worker, 
           <div className="flex items-start gap-3 rounded-lg border border-amber-500/40 bg-amber-500/10 p-4">
             <AlertTriangle className="w-5 h-5 text-amber-400 mt-0.5 shrink-0" />
             <div>
-              <p className="text-sm text-amber-200 font-medium">This worker is not paid through the app.</p>
+              <p className="text-sm text-amber-200 font-medium">{tr('Cet employé n’est pas payé via l’application.', 'هذا العامل لا يُدفع له عبر التطبيق.')}</p>
               <p className="text-xs text-amber-200/70 mt-1">
-                Edit the worker and turn on Payment to set a rate.
+                {tr('Modifiez l’employé et activez le paiement pour définir un tarif.', 'عدّل العامل وفعّل الدفع لتحديد الأجر.')}
               </p>
             </div>
           </div>
         ) : loading ? (
-          <p className="py-12 text-center text-gym-gold/50">Loading…</p>
+          <p className="py-12 text-center text-gym-gold/50">{tr('Chargement…', 'جارٍ التحميل…')}</p>
         ) : (
           <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Unpaid periods */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-semibold text-gym-gold/80">Unpaid {unit}s</h3>
+                  <h3 className="text-sm font-semibold text-gym-gold/80">{unit === 'day' ? tr('Jours non payés', 'أيام غير مدفوعة') : tr('Mois non payés', 'أشهر غير مدفوعة')}</h3>
                   <Badge variant="outline" className="border-gym-gold/30 text-gym-gold/70 text-xs">
                     {selectedKeys.size}/{allPeriods.length}
                   </Badge>
@@ -208,7 +209,7 @@ export const WorkerPaymentDialog: React.FC<Props> = ({ isOpen, onClose, worker, 
                 <ScrollArea className="h-[200px] rounded-lg border border-gym-gold/20 p-2">
                   {allPeriods.length === 0 ? (
                     <p className="text-xs text-gym-gold/40 p-3 text-center">
-                      Everything is paid up to today.
+                      {tr('Tout est payé jusqu’à aujourd’hui.', 'كل شيء مدفوع حتى اليوم.')}
                     </p>
                   ) : (
                     <div className="space-y-1">
@@ -229,16 +230,16 @@ export const WorkerPaymentDialog: React.FC<Props> = ({ isOpen, onClose, worker, 
 
               {/* Deductions */}
               <div className="space-y-2">
-                <h3 className="text-sm font-semibold text-gym-gold/80">Pending deductions</h3>
+                <h3 className="text-sm font-semibold text-gym-gold/80">{tr('Déductions en attente', 'خصومات معلقة')}</h3>
                 <ScrollArea className="h-[200px] rounded-lg border border-gym-gold/20 p-2">
                   {openAcomptes.length === 0 && openAbsences.length === 0 ? (
-                    <p className="text-xs text-gym-gold/40 p-3 text-center">Nothing to deduct.</p>
+                    <p className="text-xs text-gym-gold/40 p-3 text-center">{tr('Rien à déduire.', 'لا شيء للخصم.')}</p>
                   ) : (
                     <div className="space-y-1">
                       {openAcomptes.map((a) => (
                         <div key={a.id} className="flex items-center gap-2 p-2 rounded-lg bg-red-500/5">
                           <Badge variant="outline" className="border-amber-500/40 text-amber-300 text-[10px] h-4 shrink-0">
-                            acompte
+                            {tr('acompte', 'تسبيق')}
                           </Badge>
                           <div className="flex-1 min-w-0">
                             <p className="text-xs text-gym-gold/70 truncate">{a.description || a.acompte_date}</p>
@@ -249,7 +250,7 @@ export const WorkerPaymentDialog: React.FC<Props> = ({ isOpen, onClose, worker, 
                       {openAbsences.map((a) => (
                         <div key={a.id} className="flex items-center gap-2 p-2 rounded-lg bg-red-500/5">
                           <Badge variant="outline" className="border-orange-500/40 text-orange-300 text-[10px] h-4 shrink-0">
-                            absence
+                            {tr('absence', 'غياب')}
                           </Badge>
                           <div className="flex-1 min-w-0">
                             <p className="text-xs text-gym-gold/70 truncate">{a.description || a.absence_date}</p>
@@ -272,16 +273,16 @@ export const WorkerPaymentDialog: React.FC<Props> = ({ isOpen, onClose, worker, 
                 <span>{formatDZD(calc.gross)}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-gym-gold/60">Advances</span>
+                <span className="text-gym-gold/60">{tr('Acomptes', 'التسبيقات')}</span>
                 <span className="text-red-400">−{formatDZD(calc.acomptesTotal)}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-gym-gold/60">Absences</span>
+                <span className="text-gym-gold/60">{tr('Absences', 'الغيابات')}</span>
                 <span className="text-red-400">−{formatDZD(calc.absencesTotal)}</span>
               </div>
               <Separator className="bg-gym-gold/15" />
               <div className="flex justify-between font-semibold">
-                <span>Calculated</span>
+                <span>{tr('Calculé', 'محسوب')}</span>
                 <span className={cn(calc.isNegative && 'text-red-400')}>{formatDZD(calc.computed)}</span>
               </div>
 
@@ -289,8 +290,7 @@ export const WorkerPaymentDialog: React.FC<Props> = ({ isOpen, onClose, worker, 
                 <div className="flex items-start gap-2 rounded border border-red-500/40 bg-red-500/10 p-2">
                   <AlertTriangle className="w-3.5 h-3.5 text-red-400 mt-0.5 shrink-0" />
                   <p className="text-[11px] text-red-300 leading-relaxed">
-                    Deductions exceed the amount owed by {formatDZD(Math.abs(calc.rawComputed))}.
-                    The payment is shown as 0 — the remainder stays owed by the worker.
+                    {tr('Les déductions dépassent le montant dû de', 'الخصومات تتجاوز المبلغ المستحق بـ')} {formatDZD(Math.abs(calc.rawComputed))}. {tr('Le paiement est affiché à 0 — le reste reste dû par l’employé.', 'يظهر الدفع بـ 0 — ويبقى الباقي دينًا على العامل.')}
                   </p>
                 </div>
               )}
@@ -299,7 +299,7 @@ export const WorkerPaymentDialog: React.FC<Props> = ({ isOpen, onClose, worker, 
             {/* Final */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <Label htmlFor="override" className="cursor-pointer">Set the amount manually</Label>
+                <Label htmlFor="override" className="cursor-pointer">{tr('Saisir le montant manuellement', 'تحديد المبلغ يدويًا')}</Label>
                 <Switch id="override" checked={override}
                         onCheckedChange={(v) => {
                           setOverride(v);
@@ -309,7 +309,7 @@ export const WorkerPaymentDialog: React.FC<Props> = ({ isOpen, onClose, worker, 
 
               {override && (
                 <div className="space-y-1.5">
-                  <Label>Amount to pay (DZD)</Label>
+                  <Label>{tr('Montant à payer (DA)', 'المبلغ المستحق (دج)')}</Label>
                   <Input type="number" min="0" step="0.01" value={manualAmount}
                          onChange={(e) => setManualAmount(e.target.value)} className="gym-input" />
                 </div>
@@ -317,18 +317,18 @@ export const WorkerPaymentDialog: React.FC<Props> = ({ isOpen, onClose, worker, 
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
-                  <Label>Payment date *</Label>
+                  <Label>{tr('Date du paiement', 'تاريخ الدفع')} *</Label>
                   <Input type="date" value={payDate} onChange={(e) => setPayDate(e.target.value)} className="gym-input" />
                 </div>
                 <div className="space-y-1.5">
-                  <Label>Description <span className="text-gym-gold/40">(optional)</span></Label>
+                  <Label>{tr('Description', 'الوصف')} <span className="text-gym-gold/40">{tr('(optionnel)', '(اختياري)')}</span></Label>
                   <Input value={description} onChange={(e) => setDescription(e.target.value)}
-                         className="gym-input" placeholder="Note…" />
+                         className="gym-input" placeholder={tr('Note…', 'ملاحظة…')} />
                 </div>
               </div>
 
               <div className="flex items-center justify-between rounded-lg bg-gym-gold/10 p-3">
-                <span className="font-semibold">Total to pay</span>
+                <span className="font-semibold">{tr('Total à payer', 'المجموع المستحق')}</span>
                 <span className="text-xl font-bold gradient-text">{formatDZD(finalAmount)}</span>
               </div>
             </div>
@@ -337,21 +337,21 @@ export const WorkerPaymentDialog: React.FC<Props> = ({ isOpen, onClose, worker, 
             {payments.length > 0 && (
               <>
                 <Separator className="bg-gym-gold/15" />
-                <h3 className="text-sm font-semibold text-gym-gold/80">Payment history</h3>
+                <h3 className="text-sm font-semibold text-gym-gold/80">{tr('Historique des paiements', 'سجل المدفوعات')}</h3>
                 <ScrollArea className="max-h-[160px]">
-                  <div className="space-y-2 pr-2">
+                  <div className="space-y-2 pe-2">
                     {payments.map((p) => (
                       <div key={p.id} className="flex items-center gap-3 p-2.5 rounded-lg border border-gym-gold/15">
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-semibold">{formatDZD(p.final_amount)}</p>
                           <p className="text-xs text-gym-gold/50">
-                            {p.period_start} → {p.period_end} · paid {p.payment_date}
+                            {p.period_start} → {p.period_end} · {tr('payé le', 'دُفع في')} {p.payment_date}
                           </p>
                           {p.description && <p className="text-xs text-gym-gold/60 truncate">{p.description}</p>}
                         </div>
                         <Button size="icon" variant="ghost" onClick={() => removePayment(p.id)}
                                 className="h-7 w-7 text-red-400 hover:bg-red-500/10 shrink-0"
-                                aria-label="Delete payment">
+                                aria-label={tr('Supprimer le paiement', 'حذف الدفعة')}>
                           <Trash2 className="w-3.5 h-3.5" />
                         </Button>
                       </div>
@@ -364,10 +364,10 @@ export const WorkerPaymentDialog: React.FC<Props> = ({ isOpen, onClose, worker, 
         )}
 
         <DialogFooter className="gap-2">
-          <Button variant="ghost" onClick={onClose} disabled={saving}>Cancel</Button>
+          <Button variant="ghost" onClick={onClose} disabled={saving}>{tr('Annuler', 'إلغاء')}</Button>
           <Button className="gym-button" onClick={submit}
                   disabled={saving || loading || !worker?.pay_enabled || selectedPeriods.length === 0}>
-            {saving ? 'Saving…' : `Pay ${formatDZD(finalAmount)}`}
+            {saving ? tr('Enregistrement…', 'جارٍ الحفظ…') : `Pay ${formatDZD(finalAmount)}`}
           </Button>
         </DialogFooter>
       </DialogContent>

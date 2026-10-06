@@ -13,6 +13,7 @@ import { INTERFACES } from '@/lib/permissions';
 import { getWorkerPermissions, setWorkerPermissions, PermRow, Worker } from '@/lib/api/workers';
 import { describeError } from '@/lib/supabase';
 import { toast } from '@/hooks/use-toast';
+import { tr } from '@/lib/i18n';
 
 interface Props {
   isOpen: boolean;
@@ -61,7 +62,7 @@ export const PermissionsDialog: React.FC<Props> = ({ isOpen, onClose, worker, on
         setActions(a);
         setSelected(INTERFACES[0].key);
       } catch (e) {
-        toast({ title: 'Could not load permissions', description: describeError(e), variant: 'destructive' });
+        toast({ title: tr('Impossible de charger les permissions', 'تعذر تحميل الصلاحيات'), description: describeError(e), variant: 'destructive' });
       } finally {
         if (active) setLoading(false);
       }
@@ -138,13 +139,13 @@ export const PermissionsDialog: React.FC<Props> = ({ isOpen, onClose, worker, on
       ];
       await setWorkerPermissions(worker.id, rows);
       toast({
-        title: 'Permissions saved',
-        description: `${worker.full_name} can now see ${visible.size} interface${visible.size === 1 ? '' : 's'}.`,
+        title: tr('Permissions enregistrées', 'تم حفظ الصلاحيات'),
+        description: tr(`${worker.full_name} voit maintenant ${visible.size} interface(s).`, `يمكن لـ ${worker.full_name} الآن رؤية ${visible.size} واجهة.`),
       });
       onSaved?.();
       onClose();
     } catch (e) {
-      toast({ title: 'Could not save permissions', description: describeError(e), variant: 'destructive' });
+      toast({ title: tr('Impossible d’enregistrer les permissions', 'تعذر حفظ الصلاحيات'), description: describeError(e), variant: 'destructive' });
     } finally {
       setSaving(false);
     }
@@ -156,11 +157,10 @@ export const PermissionsDialog: React.FC<Props> = ({ isOpen, onClose, worker, on
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 gradient-text">
             <Shield className="w-5 h-5" />
-            Permissions — {worker?.full_name}
+            {tr('Permissions', 'الصلاحيات')} — {worker?.full_name}
           </DialogTitle>
           <DialogDescription className="text-gym-gold/60">
-            Tick an interface to put it in this worker's sidebar, then select it to choose
-            which buttons they can use inside it.
+            {tr('Cochez une interface pour l’ajouter au menu de cet employé, puis sélectionnez-la pour choisir les boutons autorisés.', 'حدد واجهة لإضافتها إلى قائمة هذا العامل، ثم اخترها لتحديد الأزرار المسموح بها.')}
           </DialogDescription>
         </DialogHeader>
 
@@ -168,20 +168,19 @@ export const PermissionsDialog: React.FC<Props> = ({ isOpen, onClose, worker, on
           <div className="flex items-start gap-2 rounded-lg border border-amber-500/40 bg-amber-500/10 p-3">
             <AlertTriangle className="w-4 h-4 text-amber-400 mt-0.5 shrink-0" />
             <p className="text-xs text-amber-200/90 leading-relaxed">
-              This worker has an <strong>admin</strong> role, which already grants full access to
-              everything. Permissions set here are ignored until their role changes.
+              {tr('Cet employé a le rôle', 'لهذا العامل دور')} <strong>admin</strong> {tr(', qui donne déjà un accès complet. Les permissions définies ici sont ignorées tant que son rôle ne change pas.', 'الذي يمنح وصولًا كاملًا. تُتجاهل الصلاحيات المحددة هنا حتى يتغير دوره.')}
             </p>
           </div>
         )}
 
         {loading ? (
-          <div className="py-12 text-center text-gym-gold/50">Loading permissions…</div>
+          <div className="py-12 text-center text-gym-gold/50">{tr('Chargement des permissions…', 'جارٍ تحميل الصلاحيات…')}</div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Interfaces */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <h3 className="text-sm font-semibold text-gym-gold/80">Interfaces (sidebar)</h3>
+                <h3 className="text-sm font-semibold text-gym-gold/80">{tr('Interfaces (menu)', 'الواجهات (القائمة)')}</h3>
                 <Badge variant="outline" className="border-gym-gold/30 text-gym-gold/70 text-xs">
                   {visible.size}/{INTERFACES.length}
                 </Badge>
@@ -210,7 +209,7 @@ export const PermissionsDialog: React.FC<Props> = ({ isOpen, onClose, worker, on
                         />
                         <Icon className={cn('w-4 h-4 shrink-0', on ? 'text-gym-gold' : 'text-gym-gold/40')} />
                         <span className={cn('text-sm flex-1', on ? 'text-gym-gold' : 'text-gym-gold/50')}>
-                          {iface.label}
+                          {tr(iface.label, iface.labelAr)}
                         </span>
                         {n > 0 && (
                           <Badge className="bg-gym-gold/20 text-gym-gold text-[10px] px-1.5 py-0 h-4 border-0">
@@ -228,16 +227,16 @@ export const PermissionsDialog: React.FC<Props> = ({ isOpen, onClose, worker, on
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-semibold text-gym-gold/80">
-                  Button actions — {current.label}
+                  {tr('Actions autorisées', 'الإجراءات المسموح بها')} — {tr(current.label, current.labelAr)}
                 </h3>
                 <div className="flex gap-1">
                   <Button size="sm" variant="ghost" className="h-6 text-xs px-2 text-gym-gold/70"
                           onClick={() => toggleAllActions(current.key, true)}>
-                    All
+                    {tr('Tout', 'الكل')}
                   </Button>
                   <Button size="sm" variant="ghost" className="h-6 text-xs px-2 text-gym-gold/70"
                           onClick={() => toggleAllActions(current.key, false)}>
-                    None
+                    {tr('Aucun', 'لا شيء')}
                   </Button>
                 </div>
               </div>
@@ -245,14 +244,13 @@ export const PermissionsDialog: React.FC<Props> = ({ isOpen, onClose, worker, on
               <ScrollArea className="h-[380px] rounded-lg border border-gym-gold/20 p-2">
                 {current.actions.length === 0 ? (
                   <p className="text-xs text-gym-gold/40 p-3">
-                    This interface has no button actions — visibility is all it needs.
+                    {tr('Cette interface n’a pas d’actions — la visibilité suffit.', 'هذه الواجهة بلا إجراءات — يكفي إظهارها.')}
                   </p>
                 ) : (
                   <div className="space-y-1">
                     {!visible.has(current.key) && (
                       <p className="text-[11px] text-amber-300/80 p-2 leading-relaxed">
-                        {current.label} is hidden for this worker. Ticking any action below will
-                        make it visible automatically.
+                        {tr(current.label, current.labelAr)} {tr('est masqué pour cet employé. Cocher une action ci-dessous l’affichera automatiquement.', 'مخفية عن هذا العامل. تحديد أي إجراء أدناه سيظهرها تلقائيًا.')}
                       </p>
                     )}
                     {current.actions.map((a) => {
@@ -272,8 +270,8 @@ export const PermissionsDialog: React.FC<Props> = ({ isOpen, onClose, worker, on
                             className="mt-0.5 border-gym-gold/40 data-[state=checked]:bg-gym-gold data-[state=checked]:text-gym-black"
                           />
                           <div className="min-w-0">
-                            <p className={cn('text-sm', on ? 'text-gym-gold' : 'text-gym-gold/60')}>{a.label}</p>
-                            {a.hint && <p className="text-[11px] text-gym-gold/40 leading-snug">{a.hint}</p>}
+                            <p className={cn('text-sm', on ? 'text-gym-gold' : 'text-gym-gold/60')}>{tr(a.label, a.labelAr)}</p>
+                            {a.hint && <p className="text-[11px] text-gym-gold/40 leading-snug">{tr(a.hint, a.hintAr ?? a.hint)}</p>}
                           </div>
                         </label>
                       );
@@ -286,9 +284,9 @@ export const PermissionsDialog: React.FC<Props> = ({ isOpen, onClose, worker, on
         )}
 
         <DialogFooter className="gap-2">
-          <Button variant="ghost" onClick={onClose} disabled={saving}>Cancel</Button>
+          <Button variant="ghost" onClick={onClose} disabled={saving}>{tr('Annuler', 'إلغاء')}</Button>
           <Button className="gym-button" onClick={save} disabled={saving || loading}>
-            {saving ? 'Saving…' : <><Check className="w-4 h-4 mr-2" />Save permissions</>}
+            {saving ? tr('Enregistrement…', 'جارٍ الحفظ…') : <><Check className="w-4 h-4 me-2" />{tr('Enregistrer les permissions', 'حفظ الصلاحيات')}</>}
           </Button>
         </DialogFooter>
       </DialogContent>

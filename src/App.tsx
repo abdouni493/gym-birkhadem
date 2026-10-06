@@ -22,7 +22,6 @@ import { Expenses } from "@/pages/Expenses";
 import { Caisse } from "@/pages/Caisse";
 import { Reports } from "@/pages/Reports";
 import { Settings } from "@/pages/Settings";
-import { Cards } from "@/pages/Cards";
 import { CustomerDisplay } from "@/pages/CustomerDisplay";
 import NotFound from "./pages/NotFound";
 import { nextPath } from "@/lib/utils";
@@ -36,7 +35,7 @@ const LoadingScreen = () => (
         <span className="text-2xl font-bold text-gym-black">G</span>
       </div>
       <div className="w-8 h-8 border-2 border-gym-gold border-t-transparent rounded-full animate-spin mx-auto"></div>
-      <p className="text-gym-gold/60 mt-4">Loading...</p>
+      <p className="text-gym-gold/60 mt-4">Chargement…</p>
     </div>
   </div>
 );
@@ -65,13 +64,13 @@ const Page = ({ interfaceKey, children }: { interfaceKey: string; children: Reac
 );
 
 const AppRoutes = () => {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, language } = useAuth();
   const location = useLocation();
 
   if (isLoading) return <LoadingScreen />;
 
   return (
-    <Routes>
+    <Routes key={language}>
       <Route path="/login" element={user ? <Navigate to={nextPath(location.search)} replace /> : <Login />} />
       <Route path="/" element={<Navigate to={user ? "/dashboard" : "/login"} replace />} />
 
@@ -93,7 +92,7 @@ const AppRoutes = () => {
       <Route path="/caisse"             element={<Page interfaceKey="caisse"><Caisse /></Page>} />
       <Route path="/reports"            element={<Page interfaceKey="reports"><Reports /></Page>} />
       <Route path="/settings"           element={<Page interfaceKey="settings"><Settings /></Page>} />
-      <Route path="/cards"              element={<Page interfaceKey="cards"><Cards /></Page>} />
+      <Route path="/cards"              element={<Navigate to="/athletes" replace />} />
 
       {/* Customer-facing screen: any signed-in staff account, no sidebar/header. */}
       <Route path="/display"            element={<ProtectedRoute><CustomerDisplay /></ProtectedRoute>} />

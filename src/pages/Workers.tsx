@@ -19,6 +19,7 @@ import { AcompteDialog } from '@/components/workers/AcompteDialog';
 import { AbsenceDialog } from '@/components/workers/AbsenceDialog';
 import { WorkerPaymentDialog } from '@/components/workers/WorkerPaymentDialog';
 import { AccountDialog } from '@/components/workers/AccountDialog';
+import { tr } from '@/lib/i18n';
 
 type DialogKind = 'form' | 'view' | 'permissions' | 'acompte' | 'absence' | 'payment' | 'account' | null;
 
@@ -82,18 +83,18 @@ export const Workers: React.FC = () => {
           await manageWorkerAccount({ action: 'delete', worker_id: worker.id });
         } catch (e) {
           toast({
-            title: 'Login account could not be removed',
-            description: `${describeError(e)} — the worker was not deleted.`,
+            title: tr('Le compte de connexion n’a pas pu être supprimé', 'تعذر حذف حساب الدخول'),
+            description: tr(`${describeError(e)} — l’employé n’a pas été supprimé.`, `${describeError(e)} — لم يتم حذف العامل.`),
             variant: 'destructive',
           });
           return;
         }
       }
       await deleteWorker(worker.id);
-      toast({ title: 'Worker deleted', description: `${worker.full_name} was removed.` });
+      toast({ title: tr('Employé supprimé', 'تم حذف العامل'), description: tr(`${worker.full_name} a été supprimé.`, `تم حذف ${worker.full_name}.`) });
       await load();
     } catch (e) {
-      toast({ title: 'Could not delete worker', description: describeError(e), variant: 'destructive' });
+      toast({ title: tr('Impossible de supprimer l’employé', 'تعذر حذف العامل'), description: describeError(e), variant: 'destructive' });
     }
   };
 
@@ -125,52 +126,52 @@ export const Workers: React.FC = () => {
         {/* Header */}
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h1 className="text-3xl font-bold gradient-text">Workers</h1>
+            <h1 className="text-3xl font-bold gradient-text">{tr('Employés', 'العمال')}</h1>
             <p className="text-gym-gold/60 mt-1">
-              Manage your team, their access, and their pay.
+              {tr('Gérez votre équipe, ses accès et sa paie.', 'إدارة فريقك وصلاحياته ورواتبه.')}
             </p>
           </div>
           {can('workers', 'create') && (
             <Button onClick={() => open('form', null)} className="bg-gym-gold text-gym-black hover:bg-gym-gold/90">
-              <UserPlus className="w-4 h-4 mr-2" />New worker
+              <UserPlus className="w-4 h-4 me-2" />{tr('Nouvel employé', 'عامل جديد')}
             </Button>
           )}
         </div>
 
         {/* Stats */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <Stat icon={<Users className="w-5 h-5" />} label="Total workers" value={stats.total} />
-          <Stat icon={<UserCheck className="w-5 h-5" />} label="Active" value={stats.active} />
-          <Stat icon={<KeyRound className="w-5 h-5" />} label="With login" value={stats.withLogin} />
-          <Stat icon={<Wallet className="w-5 h-5" />} label="Monthly payroll" value={formatDZD(stats.payroll)} />
+          <Stat icon={<Users className="w-5 h-5" />} label={tr('Total des employés', 'إجمالي العمال')} value={stats.total} />
+          <Stat icon={<UserCheck className="w-5 h-5" />} label={tr('Actif', 'نشط')} value={stats.active} />
+          <Stat icon={<KeyRound className="w-5 h-5" />} label={tr('Avec connexion', 'لديهم حساب دخول')} value={stats.withLogin} />
+          <Stat icon={<Wallet className="w-5 h-5" />} label={tr('Masse salariale mensuelle', 'كتلة الأجور الشهرية')} value={formatDZD(stats.payroll)} />
         </div>
 
         {/* Filters */}
         <Card className="bg-gym-gray border-gym-gold/20">
           <CardContent className="p-4 flex flex-col md:flex-row gap-3">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gym-gold/50 w-4 h-4" />
+              <Search className="absolute start-3 top-1/2 -translate-y-1/2 text-gym-gold/50 w-4 h-4" />
               <Input value={search} onChange={(e) => setSearch(e.target.value)}
-                     placeholder="Search by name, phone or email…"
-                     className="pl-10 bg-gym-black border-gym-gold/30 text-gym-gold" />
+                     placeholder={tr('Rechercher par nom, téléphone ou e-mail…', 'ابحث بالاسم أو الهاتف أو البريد…')}
+                     className="ps-10 bg-gym-black border-gym-gold/30 text-gym-gold" />
             </div>
             <Select value={roleFilter} onValueChange={setRoleFilter}>
               <SelectTrigger className="w-full md:w-44 bg-gym-black border-gym-gold/30 text-gym-gold">
-                <SelectValue placeholder="Role" />
+                <SelectValue placeholder={tr('Rôle', 'الدور')} />
               </SelectTrigger>
               <SelectContent className="bg-gym-gray border-gym-gold/30 text-gym-gold">
-                <SelectItem value="all">All roles</SelectItem>
+                <SelectItem value="all">{tr('Tous les rôles', 'كل الأدوار')}</SelectItem>
                 {roles.map((r) => <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>)}
               </SelectContent>
             </Select>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-full md:w-40 bg-gym-black border-gym-gold/30 text-gym-gold">
-                <SelectValue placeholder="Status" />
+                <SelectValue placeholder={tr('Statut', 'الحالة')} />
               </SelectTrigger>
               <SelectContent className="bg-gym-gray border-gym-gold/30 text-gym-gold">
-                <SelectItem value="all">All statuses</SelectItem>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="inactive">Inactive</SelectItem>
+                <SelectItem value="all">{tr('Tous les statuts', 'كل الحالات')}</SelectItem>
+                <SelectItem value="active">{tr('Actif', 'نشط')}</SelectItem>
+                <SelectItem value="inactive">{tr('Inactif', 'غير نشط')}</SelectItem>
               </SelectContent>
             </Select>
           </CardContent>
@@ -188,11 +189,11 @@ export const Workers: React.FC = () => {
         ) : error ? (
           <Card className="bg-gym-gray border-red-500/30">
             <CardContent className="p-8 text-center space-y-3">
-              <p className="text-red-400 font-medium">Could not load workers</p>
+              <p className="text-red-400 font-medium">{tr('Impossible de charger les employés', 'تعذر تحميل العمال')}</p>
               <p className="text-sm text-gym-gold/50">{error}</p>
               <Button variant="outline" onClick={load}
                       className="border-gym-gold/30 text-gym-gold hover:bg-gym-gold/10">
-                Try again
+                {tr('Réessayer', 'إعادة المحاولة')}
               </Button>
             </CardContent>
           </Card>
@@ -201,11 +202,11 @@ export const Workers: React.FC = () => {
             <CardContent className="p-12 text-center space-y-2">
               <Users className="w-10 h-10 text-gym-gold/25 mx-auto" />
               <p className="text-gym-gold/60">
-                {workers.length === 0 ? 'No workers yet.' : 'No workers match your filters.'}
+                {workers.length === 0 ? tr('Aucun employé pour le moment.', 'لا يوجد عمال بعد.') : tr('Aucun employé ne correspond aux filtres.', 'لا يوجد عمال مطابقون للتصفية.')}
               </p>
               {workers.length === 0 && can('workers', 'create') && (
                 <Button onClick={() => open('form', null)} className="gym-button mt-2">
-                  <UserPlus className="w-4 h-4 mr-2" />Add your first worker
+                  <UserPlus className="w-4 h-4 me-2" />{tr('Ajoutez votre premier employé', 'أضف أول عامل')}
                 </Button>
               )}
             </CardContent>

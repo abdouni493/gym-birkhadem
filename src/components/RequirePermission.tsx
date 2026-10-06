@@ -3,6 +3,7 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent } from '@/components/ui/card';
 import { ShieldOff } from 'lucide-react';
+import { tr } from '@/lib/i18n';
 
 interface Props {
   /** Interface key from the permissions catalog. */
@@ -39,10 +40,9 @@ export const RequirePermission: React.FC<Props> = ({ interfaceKey, children }) =
         <Card className="bg-gym-gray border-gym-gold/20 max-w-md">
           <CardContent className="p-8 text-center space-y-3">
             <ShieldOff className="w-10 h-10 text-gym-gold/30 mx-auto" />
-            <h2 className="text-lg font-semibold text-gym-gold">No access</h2>
+            <h2 className="text-lg font-semibold text-gym-gold">{tr('Accès refusé', 'لا يوجد وصول')}</h2>
             <p className="text-sm text-gym-gold/60 leading-relaxed">
-              Your account has not been granted access to any part of the app yet.
-              Ask an administrator to set your permissions.
+              {tr('Votre compte n’a encore accès à aucune partie de l’application. Demandez à un administrateur de définir vos permissions.', 'لم يُمنح حسابك الوصول إلى أي جزء من التطبيق بعد. اطلب من المسؤول تحديد صلاحياتك.')}
             </p>
           </CardContent>
         </Card>

@@ -28,6 +28,7 @@ import {
 import { ProductFormDialog } from '@/components/products/ProductFormDialog';
 import { ViewToggle, ViewMode } from '@/components/common/ViewToggle';
 import { printPurchaseInvoice } from '@/lib/print';
+import { tr } from '@/lib/i18n';
 
 interface LineItem {
   product_id: string;
@@ -160,21 +161,21 @@ export const PurchaseInvoices: React.FC = () => {
       setSupplierId(s.id);
       setAddingSupplier(false);
       setNewSupplier({ name: '', phone: '', address: '' });
-      toast({ title: 'Supplier created' });
+      toast({ title: tr('Fournisseur créé', 'تم إنشاء المورد') });
     } catch (e) {
-      toast({ title: 'Could not create supplier', description: describeError(e), variant: 'destructive' });
+      toast({ title: tr('Impossible de créer le fournisseur', 'تعذر إنشاء المورد'), description: describeError(e), variant: 'destructive' });
     }
   };
 
   const save = async () => {
-    if (items.length === 0) { toast({ title: 'Add at least one product', variant: 'destructive' }); return; }
-    if (!supplierId) { toast({ title: 'Select a supplier', variant: 'destructive' }); return; }
+    if (items.length === 0) { toast({ title: tr('Ajoutez au moins un produit', 'أضف منتجًا واحدًا على الأقل'), variant: 'destructive' }); return; }
+    if (!supplierId) { toast({ title: tr('Choisissez un fournisseur', 'اختر موردًا'), variant: 'destructive' }); return; }
     const paid = amountToPay === '' ? total : Number(amountToPay);
     setSaving(true);
     try {
       if (editingId) {
         await updatePurchaseHeader(editingId, { supplier_id: supplierId, total, amount_paid: paid, notes });
-        toast({ title: 'Purchase updated' });
+        toast({ title: tr('Achat modifié', 'تم تعديل الشراء') });
       } else {
         await createPurchase({
           supplier_id: supplierId, total, amount_paid: paid, notes,
@@ -184,13 +185,13 @@ export const PurchaseInvoices: React.FC = () => {
             min_stock_level: it.min_stock_level, expiry_date: expiryEnabled[it.product_id] ? it.expiry_date : null,
           })),
         });
-        toast({ title: 'Purchase recorded' });
+        toast({ title: tr('Achat enregistré', 'تم تسجيل الشراء') });
       }
       setFormOpen(false);
       resetForm();
       await load();
     } catch (e) {
-      toast({ title: 'Could not save purchase', description: describeError(e), variant: 'destructive' });
+      toast({ title: tr('Impossible d’enregistrer l’achat', 'تعذر حفظ الشراء'), description: describeError(e), variant: 'destructive' });
     } finally {
       setSaving(false);
     }
@@ -200,25 +201,25 @@ export const PurchaseInvoices: React.FC = () => {
     if (!toDelete) return;
     try {
       await deletePurchase(toDelete.id);
-      toast({ title: 'Purchase deleted' });
+      toast({ title: tr('Achat supprimé', 'تم حذف الشراء') });
       setToDelete(null);
       await load();
     } catch (e) {
-      toast({ title: 'Could not delete', description: describeError(e), variant: 'destructive' });
+      toast({ title: tr('Suppression impossible', 'تعذر الحذف'), description: describeError(e), variant: 'destructive' });
     }
   };
 
   const doPay = async () => {
     if (!payTarget) return;
     const amount = Number(payAmount) || 0;
-    if (amount <= 0) { toast({ title: 'Invalid amount', variant: 'destructive' }); return; }
+    if (amount <= 0) { toast({ title: tr('Montant invalide', 'مبلغ غير صالح'), variant: 'destructive' }); return; }
     try {
       await payPurchase(payTarget, amount);
-      toast({ title: 'Payment recorded' });
+      toast({ title: tr('Paiement enregistré', 'تم تسجيل الدفع') });
       setPayTarget(null); setPayAmount('');
       await load();
     } catch (e) {
-      toast({ title: 'Could not record payment', description: describeError(e), variant: 'destructive' });
+      toast({ title: tr('Impossible d’enregistrer le paiement', 'تعذر تسجيل الدفع'), description: describeError(e), variant: 'destructive' });
     }
   };
 
@@ -240,13 +241,13 @@ export const PurchaseInvoices: React.FC = () => {
       };
       const legacyStore = store ? { ...store, logo: store.logo_url } : undefined;
       printPurchaseInvoice(legacyInvoice as never, (supplier as never) ?? undefined, legacyStore as never, {
-        purchaseInvoice: 'Purchase invoice', invoiceNo: 'Invoice', date: 'Date', supplier: 'Supplier',
-        phone: 'Phone', address: 'Address', product: 'Product', quantity: 'Qty', unitPrice: 'Unit price',
-        total: 'Total', subtotal: 'Subtotal', paid: 'Paid', remaining: 'Remaining', grandTotal: 'Grand total',
-        supplierSignature: 'Supplier signature', receiverSignature: 'Receiver signature', notes: 'Notes',
+        purchaseInvoice: tr('Facture d’achat', 'فاتورة شراء'), invoiceNo: tr('Facture', 'فاتورة'), date: tr('Date', 'التاريخ'), supplier: tr('Fournisseur', 'المورد'),
+        phone: tr('Téléphone', 'الهاتف'), address: tr('Adresse', 'العنوان'), product: tr('Produit', 'المنتج'), quantity: tr('Qté', 'الكمية'), unitPrice: tr('Prix unitaire', 'سعر الوحدة'),
+        total: tr('Total', 'المجموع'), subtotal: tr('Sous-total', 'المجموع الفرعي'), paid: tr('Payé', 'مدفوع'), remaining: tr('Reste', 'الباقي'), grandTotal: tr('Total général', 'المجموع الكلي'),
+        supplierSignature: tr('Signature du fournisseur', 'توقيع المورد'), receiverSignature: tr('Signature du réceptionnaire', 'توقيع المستلم'), notes: tr('Notes', 'ملاحظات'),
       });
     } catch (e) {
-      toast({ title: 'Could not print', description: describeError(e), variant: 'destructive' });
+      toast({ title: tr('Impression impossible', 'تعذرت الطباعة'), description: describeError(e), variant: 'destructive' });
     }
   };
 
@@ -261,9 +262,9 @@ export const PurchaseInvoices: React.FC = () => {
   const pendingAmount = useMemo(() => invoices.reduce((s, i) => s + (i.total_amount - i.amount_paid), 0), [invoices]);
 
   const statusBadge = (status: PurchaseInvoice['status']) => {
-    if (status === 'paid') return <Badge className="bg-green-500/20 text-green-400 border border-green-500/30">paid</Badge>;
-    if (status === 'partial') return <Badge className="bg-orange-500/20 text-orange-400 border border-orange-500/30">partial</Badge>;
-    return <Badge className="bg-red-500/20 text-red-400 border border-red-500/30">pending</Badge>;
+    if (status === 'paid') return <Badge className="bg-green-500/20 text-green-400 border border-green-500/30">{tr('payée', 'مدفوعة')}</Badge>;
+    if (status === 'partial') return <Badge className="bg-orange-500/20 text-orange-400 border border-orange-500/30">{tr('partielle', 'جزئية')}</Badge>;
+    return <Badge className="bg-red-500/20 text-red-400 border border-red-500/30">{tr('en attente', 'معلقة')}</Badge>;
   };
 
   const actions = (inv: PurchaseInvoice) => {
@@ -284,27 +285,27 @@ export const PurchaseInvoices: React.FC = () => {
       <div className="max-w-7xl mx-auto space-y-6">
         <div className="flex flex-wrap justify-between items-center gap-3">
           <div>
-            <h1 className="text-3xl font-bold gradient-text">Purchases</h1>
-            <p className="text-gym-gold/60 mt-1">Supplier invoices and stock intake.</p>
+            <h1 className="text-3xl font-bold gradient-text">{tr('Achats', 'المشتريات')}</h1>
+            <p className="text-gym-gold/60 mt-1">{tr('Factures fournisseurs et entrées de stock.', 'فواتير الموردين وإدخال المخزون.')}</p>
           </div>
           {can('purchase_invoices', 'create') && (
             <Button onClick={openCreate} className="bg-gym-gold text-gym-black hover:bg-gym-gold/90">
-              <Plus className="w-4 h-4 mr-2" />New purchase
+              <Plus className="w-4 h-4 me-2" />{tr('Nouvel achat', 'شراء جديد')}
             </Button>
           )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Card className="bg-gym-gray border-gym-gold/20"><CardContent className="p-5 flex items-center justify-between">
-            <div><p className="text-gym-gold/60 text-sm">Invoices</p><p className="text-2xl font-bold text-gym-gold">{invoices.length}</p></div>
+            <div><p className="text-gym-gold/60 text-sm">{tr('Factures', 'الفواتير')}</p><p className="text-2xl font-bold text-gym-gold">{invoices.length}</p></div>
             <Package className="w-8 h-8 text-blue-400" />
           </CardContent></Card>
           <Card className="bg-gym-gray border-gym-gold/20"><CardContent className="p-5 flex items-center justify-between">
-            <div><p className="text-gym-gold/60 text-sm">Total</p><p className="text-2xl font-bold text-gym-gold">{formatDZD(totalAmount)}</p></div>
+            <div><p className="text-gym-gold/60 text-sm">{tr('Total', 'المجموع')}</p><p className="text-2xl font-bold text-gym-gold">{formatDZD(totalAmount)}</p></div>
             <DollarSign className="w-8 h-8 text-green-400" />
           </CardContent></Card>
           <Card className="bg-gym-gray border-gym-gold/20"><CardContent className="p-5 flex items-center justify-between">
-            <div><p className="text-gym-gold/60 text-sm">Pending</p><p className="text-2xl font-bold text-orange-400">{formatDZD(pendingAmount)}</p></div>
+            <div><p className="text-gym-gold/60 text-sm">{tr('En attente', 'معلق')}</p><p className="text-2xl font-bold text-orange-400">{formatDZD(pendingAmount)}</p></div>
             <Calendar className="w-8 h-8 text-orange-400" />
           </CardContent></Card>
         </div>
@@ -312,37 +313,37 @@ export const PurchaseInvoices: React.FC = () => {
         <Card className="bg-gym-gray border-gym-gold/20">
           <CardContent className="p-4 flex flex-col lg:flex-row gap-3">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gym-gold/50 w-4 h-4" />
-              <Input placeholder="Search invoice or supplier…" value={search} onChange={(e) => setSearch(e.target.value)}
-                     className="pl-10 bg-gym-black border-gym-gold/30 text-gym-gold" />
+              <Search className="absolute start-3 top-1/2 -translate-y-1/2 text-gym-gold/50 w-4 h-4" />
+              <Input placeholder={tr('Rechercher une facture ou un fournisseur…', 'ابحث عن فاتورة أو مورد…')} value={search} onChange={(e) => setSearch(e.target.value)}
+                     className="ps-10 bg-gym-black border-gym-gold/30 text-gym-gold" />
             </div>
             <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as typeof statusFilter)}>
               <SelectTrigger className="w-full lg:w-40 bg-gym-black border-gym-gold/30 text-gym-gold"><SelectValue /></SelectTrigger>
               <SelectContent className="bg-gym-gray border-gym-gold/30 text-gym-gold">
-                <SelectItem value="all">All statuses</SelectItem>
-                <SelectItem value="paid">Paid</SelectItem>
-                <SelectItem value="partial">Partial</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
+                <SelectItem value="all">{tr('Tous les statuts', 'كل الحالات')}</SelectItem>
+                <SelectItem value="paid">{tr('Payé', 'مدفوع')}</SelectItem>
+                <SelectItem value="partial">{tr('Partiel', 'جزئي')}</SelectItem>
+                <SelectItem value="pending">{tr('En attente', 'معلق')}</SelectItem>
               </SelectContent>
             </Select>
-            <ViewToggle mode={viewMode} onChange={setViewMode} cardsLabel="Cards" tableLabel="Table" />
+            <ViewToggle mode={viewMode} onChange={setViewMode} cardsLabel={tr('Cartes', 'بطاقات')} tableLabel={tr('Tableau', 'جدول')} />
           </CardContent>
         </Card>
 
         {loading ? (
-          <Card className="bg-gym-gray border-gym-gold/20"><CardContent className="p-12 text-center text-gym-gold/40">Loading…</CardContent></Card>
+          <Card className="bg-gym-gray border-gym-gold/20"><CardContent className="p-12 text-center text-gym-gold/40">{tr('Chargement…', 'جارٍ التحميل…')}</CardContent></Card>
         ) : error ? (
           <Card className="bg-gym-gray border-red-500/30">
             <CardContent className="p-8 text-center space-y-3">
-              <p className="text-red-400 font-medium">Could not load purchases</p>
+              <p className="text-red-400 font-medium">{tr('Impossible de charger les achats', 'تعذر تحميل المشتريات')}</p>
               <p className="text-sm text-gym-gold/50">{error}</p>
-              <Button variant="outline" onClick={load} className="border-gym-gold/30 text-gym-gold hover:bg-gym-gold/10">Try again</Button>
+              <Button variant="outline" onClick={load} className="border-gym-gold/30 text-gym-gold hover:bg-gym-gold/10">{tr('Réessayer', 'إعادة المحاولة')}</Button>
             </CardContent>
           </Card>
         ) : filtered.length === 0 ? (
           <Card className="bg-gym-gray border-gym-gold/20"><CardContent className="p-12 text-center">
             <Package className="w-12 h-12 mx-auto mb-3 text-gym-gold/20" />
-            <p className="text-gym-gold/60">No purchases found.</p>
+            <p className="text-gym-gold/60">{tr('Aucun achat trouvé.', 'لم يتم العثور على مشتريات.')}</p>
           </CardContent></Card>
         ) : viewMode === 'cards' ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -358,9 +359,9 @@ export const PurchaseInvoices: React.FC = () => {
                     {statusBadge(inv.status)}
                   </div></CardHeader>
                   <CardContent className="space-y-2">
-                    <p className="text-gym-gold/60 text-xs">{(inv.purchase_invoice_items ?? []).length} products</p>
-                    <div className="flex justify-between text-sm"><span className="text-gym-gold/60">Total</span><span className="text-gym-gold font-semibold">{formatDZD(inv.total_amount)}</span></div>
-                    {remaining > 0 && <div className="flex justify-between text-sm"><span className="text-gym-gold/60">Remaining</span><span className="text-red-400">{formatDZD(remaining)}</span></div>}
+                    <p className="text-gym-gold/60 text-xs">{(inv.purchase_invoice_items ?? []).length} {tr('produit(s)', 'منتج')}</p>
+                    <div className="flex justify-between text-sm"><span className="text-gym-gold/60">{tr('Total', 'المجموع')}</span><span className="text-gym-gold font-semibold">{formatDZD(inv.total_amount)}</span></div>
+                    {remaining > 0 && <div className="flex justify-between text-sm"><span className="text-gym-gold/60">{tr('Reste', 'الباقي')}</span><span className="text-red-400">{formatDZD(remaining)}</span></div>}
                     <div className="pt-2 border-t border-gym-gold/10">{actions(inv)}</div>
                   </CardContent>
                 </Card>
@@ -371,13 +372,13 @@ export const PurchaseInvoices: React.FC = () => {
           <Card className="bg-gym-gray border-gym-gold/20"><CardContent className="p-0 overflow-x-auto">
             <Table>
               <TableHeader><TableRow className="border-gym-gold/20 hover:bg-gym-gold/5">
-                <TableHead className="text-gym-gold">Invoice</TableHead>
-                <TableHead className="text-gym-gold">Supplier</TableHead>
-                <TableHead className="text-gym-gold">Date</TableHead>
-                <TableHead className="text-gym-gold text-right">Total</TableHead>
-                <TableHead className="text-gym-gold text-right">Remaining</TableHead>
-                <TableHead className="text-gym-gold">Status</TableHead>
-                <TableHead className="text-gym-gold">Actions</TableHead>
+                <TableHead className="text-gym-gold">{tr('Facture', 'فاتورة')}</TableHead>
+                <TableHead className="text-gym-gold">{tr('Fournisseur', 'المورد')}</TableHead>
+                <TableHead className="text-gym-gold">{tr('Date', 'التاريخ')}</TableHead>
+                <TableHead className="text-gym-gold text-end">{tr('Total', 'المجموع')}</TableHead>
+                <TableHead className="text-gym-gold text-end">{tr('Reste', 'الباقي')}</TableHead>
+                <TableHead className="text-gym-gold">{tr('Statut', 'الحالة')}</TableHead>
+                <TableHead className="text-gym-gold">{tr('Actions', 'الإجراءات')}</TableHead>
               </TableRow></TableHeader>
               <TableBody>
                 {filtered.map((inv) => (
@@ -385,8 +386,8 @@ export const PurchaseInvoices: React.FC = () => {
                     <TableCell className="text-gym-gold font-mono">{inv.invoice_number}</TableCell>
                     <TableCell className="text-gym-gold">{inv.suppliers?.name || '—'}</TableCell>
                     <TableCell className="text-gym-gold">{inv.invoice_date}</TableCell>
-                    <TableCell className="text-gym-gold text-right">{formatDZD(inv.total_amount)}</TableCell>
-                    <TableCell className="text-right text-red-400">{formatDZD(inv.total_amount - inv.amount_paid)}</TableCell>
+                    <TableCell className="text-gym-gold text-end">{formatDZD(inv.total_amount)}</TableCell>
+                    <TableCell className="text-end text-red-400">{formatDZD(inv.total_amount - inv.amount_paid)}</TableCell>
                     <TableCell>{statusBadge(inv.status)}</TableCell>
                     <TableCell>{actions(inv)}</TableCell>
                   </TableRow>
@@ -400,14 +401,14 @@ export const PurchaseInvoices: React.FC = () => {
       {/* Create / edit */}
       <Dialog open={formOpen} onOpenChange={(o) => { if (!o) { setFormOpen(false); resetForm(); } }}>
         <DialogContent className="max-w-3xl max-h-[92vh] overflow-y-auto bg-gym-gray border-gym-gold/30 text-gym-gold">
-          <DialogHeader><DialogTitle className="gradient-text">{editingId ? 'Edit purchase' : 'New purchase'}</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle className="gradient-text">{editingId ? tr('Modifier l’achat', 'تعديل الشراء') : tr('Nouvel achat', 'شراء جديد')}</DialogTitle></DialogHeader>
           <div className="space-y-4">
             {/* Supplier */}
             <div>
-              <Label>Supplier *</Label>
+              <Label>{tr('Fournisseur', 'المورد')} *</Label>
               <div className="flex gap-2 mt-1">
                 <Select value={supplierId} onValueChange={setSupplierId}>
-                  <SelectTrigger className="bg-gym-black border-gym-gold/30 text-gym-gold"><SelectValue placeholder="Select supplier" /></SelectTrigger>
+                  <SelectTrigger className="bg-gym-black border-gym-gold/30 text-gym-gold"><SelectValue placeholder={tr('Choisir un fournisseur', 'اختر موردًا')} /></SelectTrigger>
                   <SelectContent className="bg-gym-gray border-gym-gold/30 text-gym-gold">
                     {suppliers.map((s) => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
                   </SelectContent>
@@ -416,32 +417,32 @@ export const PurchaseInvoices: React.FC = () => {
               </div>
               {addingSupplier && (
                 <div className="mt-2 p-3 rounded-lg border border-gym-gold/15 space-y-2">
-                  <Input value={newSupplier.name} onChange={(e) => setNewSupplier({ ...newSupplier, name: e.target.value })} placeholder="Name" className="bg-gym-black border-gym-gold/30 text-gym-gold" />
-                  <Input value={newSupplier.phone} onChange={(e) => setNewSupplier({ ...newSupplier, phone: e.target.value })} placeholder="Phone" className="bg-gym-black border-gym-gold/30 text-gym-gold" />
-                  <Button onClick={handleCreateSupplier} className="gym-button w-full">Create supplier</Button>
+                  <Input value={newSupplier.name} onChange={(e) => setNewSupplier({ ...newSupplier, name: e.target.value })} placeholder={tr('Nom', 'الاسم')} className="bg-gym-black border-gym-gold/30 text-gym-gold" />
+                  <Input value={newSupplier.phone} onChange={(e) => setNewSupplier({ ...newSupplier, phone: e.target.value })} placeholder={tr('Téléphone', 'الهاتف')} className="bg-gym-black border-gym-gold/30 text-gym-gold" />
+                  <Button onClick={handleCreateSupplier} className="gym-button w-full">{tr('Créer le fournisseur', 'إنشاء المورد')}</Button>
                 </div>
               )}
             </div>
 
             {/* Product search */}
             <div className="relative">
-              <Label>Add products</Label>
+              <Label>{tr('Ajouter des produits', 'إضافة منتجات')}</Label>
               <div className="flex gap-2 mt-1">
                 <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gym-gold/50 w-4 h-4" />
+                  <Search className="absolute start-3 top-1/2 -translate-y-1/2 text-gym-gold/50 w-4 h-4" />
                   <Input value={productSearch} onChange={(e) => { setProductSearch(e.target.value); setShowProductDropdown(true); }}
-                         className="pl-10 bg-gym-black border-gym-gold/30 text-gym-gold" placeholder="Search product…" />
+                         className="ps-10 bg-gym-black border-gym-gold/30 text-gym-gold" placeholder={tr('Rechercher un produit…', 'ابحث عن منتج…')} />
                   {showProductDropdown && filteredProducts.length > 0 && (
                     <div className="absolute z-50 w-full mt-1 bg-gym-gray border border-gym-gold/30 rounded-lg shadow-2xl overflow-hidden">
                       {filteredProducts.map((p) => (
-                        <button key={p.id} onClick={() => addProductLine(p)} className="w-full text-left px-4 py-2 hover:bg-gym-gold/15 text-gym-gold border-b border-gym-gold/10 last:border-0">
+                        <button key={p.id} onClick={() => addProductLine(p)} className="w-full text-start px-4 py-2 hover:bg-gym-gold/15 text-gym-gold border-b border-gym-gold/10 last:border-0">
                           {p.name}{p.barcode && <span className="text-gym-gold/50 text-xs"> • {p.barcode}</span>}
                         </button>
                       ))}
                     </div>
                   )}
                 </div>
-                <Button type="button" variant="outline" onClick={() => setProductFormOpen(true)} className="border-gym-gold/30 text-gym-gold hover:bg-gym-gold/10 shrink-0"><Plus className="w-4 h-4 mr-1" />New</Button>
+                <Button type="button" variant="outline" onClick={() => setProductFormOpen(true)} className="border-gym-gold/30 text-gym-gold hover:bg-gym-gold/10 shrink-0"><Plus className="w-4 h-4 me-1" />{tr('Nouveau', 'جديد')}</Button>
               </div>
             </div>
 
@@ -455,20 +456,20 @@ export const PurchaseInvoices: React.FC = () => {
                       <Button size="icon" variant="ghost" onClick={() => removeLine(it.product_id)} className="h-7 w-7 text-red-400 hover:bg-red-500/10"><X className="w-4 h-4" /></Button>
                     </div>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                      <div><Label className="text-xs">Qty</Label><Input type="number" min="1" value={it.quantity} onChange={(e) => updateLine(it.product_id, 'quantity', e.target.value)} className="bg-gym-black border-gym-gold/30 text-gym-gold h-8" /></div>
-                      <div><Label className="text-xs">Cost</Label><Input type="number" min="0" step="0.01" value={it.purchase_price} onChange={(e) => updateLine(it.product_id, 'purchase_price', e.target.value)} className="bg-gym-black border-gym-gold/30 text-gym-gold h-8" /></div>
-                      <div><Label className="text-xs">Sell</Label><Input type="number" min="0" step="0.01" value={it.selling_price} onChange={(e) => updateLine(it.product_id, 'selling_price', e.target.value)} className="bg-gym-black border-gym-gold/30 text-gym-gold h-8" /></div>
-                      <div><Label className="text-xs">Min stock</Label><Input type="number" min="0" value={it.min_stock_level ?? 0} onChange={(e) => updateLine(it.product_id, 'min_stock_level', e.target.value)} className="bg-gym-black border-gym-gold/30 text-gym-gold h-8" /></div>
+                      <div><Label className="text-xs">{tr('Qté', 'الكمية')}</Label><Input type="number" min="1" value={it.quantity} onChange={(e) => updateLine(it.product_id, 'quantity', e.target.value)} className="bg-gym-black border-gym-gold/30 text-gym-gold h-8" /></div>
+                      <div><Label className="text-xs">{tr('Coût', 'التكلفة')}</Label><Input type="number" min="0" step="0.01" value={it.purchase_price} onChange={(e) => updateLine(it.product_id, 'purchase_price', e.target.value)} className="bg-gym-black border-gym-gold/30 text-gym-gold h-8" /></div>
+                      <div><Label className="text-xs">{tr('Vente', 'البيع')}</Label><Input type="number" min="0" step="0.01" value={it.selling_price} onChange={(e) => updateLine(it.product_id, 'selling_price', e.target.value)} className="bg-gym-black border-gym-gold/30 text-gym-gold h-8" /></div>
+                      <div><Label className="text-xs">{tr('Stock min.', 'الحد الأدنى')}</Label><Input type="number" min="0" value={it.min_stock_level ?? 0} onChange={(e) => updateLine(it.product_id, 'min_stock_level', e.target.value)} className="bg-gym-black border-gym-gold/30 text-gym-gold h-8" /></div>
                     </div>
                     <div className="flex items-center gap-3">
                       <div className="flex items-center gap-2">
                         <Switch checked={!!expiryEnabled[it.product_id]} onCheckedChange={(v) => toggleExpiry(it.product_id, v)} />
-                        <Label className="text-xs">Has expiry</Label>
+                        <Label className="text-xs">{tr('Avec expiration', 'له تاريخ انتهاء')}</Label>
                       </div>
                       {expiryEnabled[it.product_id] && (
                         <Input type="date" value={it.expiry_date ?? ''} onChange={(e) => updateLine(it.product_id, 'expiry_date', e.target.value)} className="bg-gym-black border-gym-gold/30 text-gym-gold h-8 w-44" />
                       )}
-                      <span className="ml-auto text-sm text-gym-gold/70">{formatDZD(it.quantity * it.purchase_price)}</span>
+                      <span className="ms-auto text-sm text-gym-gold/70">{formatDZD(it.quantity * it.purchase_price)}</span>
                     </div>
                   </div>
                 ))}
@@ -478,16 +479,16 @@ export const PurchaseInvoices: React.FC = () => {
             <Separator className="bg-gym-gold/15" />
 
             <div className="grid grid-cols-2 gap-3">
-              <div><Label>Amount paid</Label><Input type="number" min="0" step="0.01" value={amountToPay} onChange={(e) => setAmountToPay(e.target.value)} placeholder={String(total)} className="bg-gym-black border-gym-gold/30 text-gym-gold mt-1" /></div>
+              <div><Label>{tr('Montant payé', 'المبلغ المدفوع')}</Label><Input type="number" min="0" step="0.01" value={amountToPay} onChange={(e) => setAmountToPay(e.target.value)} placeholder={String(total)} className="bg-gym-black border-gym-gold/30 text-gym-gold mt-1" /></div>
               <div className="flex flex-col justify-end">
-                <div className="flex justify-between text-lg font-bold"><span>Total</span><span>{formatDZD(total)}</span></div>
+                <div className="flex justify-between text-lg font-bold"><span>{tr('Total', 'المجموع')}</span><span>{formatDZD(total)}</span></div>
               </div>
             </div>
-            <div><Label>Notes</Label><Textarea value={notes} onChange={(e) => setNotes(e.target.value)} className="bg-gym-black border-gym-gold/30 text-gym-gold mt-1" rows={2} /></div>
+            <div><Label>{tr('Notes', 'ملاحظات')}</Label><Textarea value={notes} onChange={(e) => setNotes(e.target.value)} className="bg-gym-black border-gym-gold/30 text-gym-gold mt-1" rows={2} /></div>
           </div>
           <DialogFooter className="gap-2">
-            <Button variant="ghost" onClick={() => { setFormOpen(false); resetForm(); }} disabled={saving}>Cancel</Button>
-            <Button onClick={save} className="gym-button" disabled={saving}>{saving ? 'Saving…' : 'Save'}</Button>
+            <Button variant="ghost" onClick={() => { setFormOpen(false); resetForm(); }} disabled={saving}>{tr('Annuler', 'إلغاء')}</Button>
+            <Button onClick={save} className="gym-button" disabled={saving}>{saving ? tr('Enregistrement…', 'جارٍ الحفظ…') : tr('Enregistrer', 'حفظ')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -497,39 +498,39 @@ export const PurchaseInvoices: React.FC = () => {
       {/* Details */}
       <Dialog open={!!detailsInvoice} onOpenChange={(o) => !o && setDetailsInvoice(null)}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-gym-gray border-gym-gold/30 text-gym-gold">
-          <DialogHeader><DialogTitle className="gradient-text">Purchase details</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle className="gradient-text">{tr('Détails de l’achat', 'تفاصيل الشراء')}</DialogTitle></DialogHeader>
           {detailsInvoice && (
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-3 text-sm">
-                <div><p className="text-gym-gold/60 text-xs">Invoice</p><p className="font-mono font-semibold">{detailsInvoice.invoice_number}</p></div>
-                <div><p className="text-gym-gold/60 text-xs">Date</p><p>{detailsInvoice.invoice_date}</p></div>
-                <div><p className="text-gym-gold/60 text-xs">Supplier</p><p>{detailsInvoice.suppliers?.name || '—'}</p></div>
-                <div><p className="text-gym-gold/60 text-xs">Status</p><div className="mt-1">{statusBadge(detailsInvoice.status)}</div></div>
+                <div><p className="text-gym-gold/60 text-xs">{tr('Facture', 'فاتورة')}</p><p className="font-mono font-semibold">{detailsInvoice.invoice_number}</p></div>
+                <div><p className="text-gym-gold/60 text-xs">{tr('Date', 'التاريخ')}</p><p>{detailsInvoice.invoice_date}</p></div>
+                <div><p className="text-gym-gold/60 text-xs">{tr('Fournisseur', 'المورد')}</p><p>{detailsInvoice.suppliers?.name || '—'}</p></div>
+                <div><p className="text-gym-gold/60 text-xs">{tr('Statut', 'الحالة')}</p><div className="mt-1">{statusBadge(detailsInvoice.status)}</div></div>
               </div>
               <div className="overflow-x-auto border border-gym-gold/15 rounded-lg">
                 <Table>
                   <TableHeader><TableRow className="border-gym-gold/20">
-                    <TableHead className="text-gym-gold">Product</TableHead>
-                    <TableHead className="text-gym-gold text-right">Qty</TableHead>
-                    <TableHead className="text-gym-gold text-right">Cost</TableHead>
-                    <TableHead className="text-gym-gold text-right">Total</TableHead>
+                    <TableHead className="text-gym-gold">{tr('Produit', 'المنتج')}</TableHead>
+                    <TableHead className="text-gym-gold text-end">{tr('Qté', 'الكمية')}</TableHead>
+                    <TableHead className="text-gym-gold text-end">{tr('Coût', 'التكلفة')}</TableHead>
+                    <TableHead className="text-gym-gold text-end">{tr('Total', 'المجموع')}</TableHead>
                   </TableRow></TableHeader>
                   <TableBody>
                     {(detailsInvoice.purchase_invoice_items ?? []).map((it) => (
                       <TableRow key={it.id} className="border-gym-gold/10">
                         <TableCell className="text-gym-gold">{it.product_name}</TableCell>
-                        <TableCell className="text-gym-gold text-right">{it.quantity}</TableCell>
-                        <TableCell className="text-gym-gold text-right">{formatDZD(it.purchase_price)}</TableCell>
-                        <TableCell className="text-gym-gold text-right font-semibold">{formatDZD(it.line_total)}</TableCell>
+                        <TableCell className="text-gym-gold text-end">{it.quantity}</TableCell>
+                        <TableCell className="text-gym-gold text-end">{formatDZD(it.purchase_price)}</TableCell>
+                        <TableCell className="text-gym-gold text-end font-semibold">{formatDZD(it.line_total)}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
                 </Table>
               </div>
               <div className="p-4 bg-gym-gold/10 rounded-lg border border-gym-gold/20 space-y-1">
-                <div className="flex justify-between text-gym-gold font-bold"><span>Total</span><span>{formatDZD(detailsInvoice.total_amount)}</span></div>
-                <div className="flex justify-between text-green-400"><span>Paid</span><span>{formatDZD(detailsInvoice.amount_paid)}</span></div>
-                <div className="flex justify-between text-red-400"><span>Remaining</span><span>{formatDZD(detailsInvoice.total_amount - detailsInvoice.amount_paid)}</span></div>
+                <div className="flex justify-between text-gym-gold font-bold"><span>{tr('Total', 'المجموع')}</span><span>{formatDZD(detailsInvoice.total_amount)}</span></div>
+                <div className="flex justify-between text-green-400"><span>{tr('Payé', 'مدفوع')}</span><span>{formatDZD(detailsInvoice.amount_paid)}</span></div>
+                <div className="flex justify-between text-red-400"><span>{tr('Reste', 'الباقي')}</span><span>{formatDZD(detailsInvoice.total_amount - detailsInvoice.amount_paid)}</span></div>
               </div>
             </div>
           )}
@@ -539,18 +540,18 @@ export const PurchaseInvoices: React.FC = () => {
       {/* Pay */}
       <Dialog open={!!payTarget} onOpenChange={(o) => { if (!o) { setPayTarget(null); setPayAmount(''); } }}>
         <DialogContent className="max-w-md bg-gym-gray border-gym-gold/30 text-gym-gold">
-          <DialogHeader><DialogTitle className="gradient-text">Pay purchase</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle className="gradient-text">{tr('Payer l’achat', 'دفع الشراء')}</DialogTitle></DialogHeader>
           {payTarget && (
             <div className="space-y-4">
               <div className="grid grid-cols-3 gap-2 text-center text-sm">
-                <div className="bg-gym-gold/5 rounded p-3"><p className="text-gym-gold/60 text-xs">Total</p><p className="font-semibold">{formatDZD(payTarget.total_amount)}</p></div>
-                <div className="bg-gym-gold/5 rounded p-3"><p className="text-gym-gold/60 text-xs">Paid</p><p className="text-green-400 font-semibold">{formatDZD(payTarget.amount_paid)}</p></div>
-                <div className="bg-gym-gold/5 rounded p-3"><p className="text-gym-gold/60 text-xs">Remaining</p><p className="text-red-400 font-semibold">{formatDZD(payTarget.total_amount - payTarget.amount_paid)}</p></div>
+                <div className="bg-gym-gold/5 rounded p-3"><p className="text-gym-gold/60 text-xs">{tr('Total', 'المجموع')}</p><p className="font-semibold">{formatDZD(payTarget.total_amount)}</p></div>
+                <div className="bg-gym-gold/5 rounded p-3"><p className="text-gym-gold/60 text-xs">{tr('Payé', 'مدفوع')}</p><p className="text-green-400 font-semibold">{formatDZD(payTarget.amount_paid)}</p></div>
+                <div className="bg-gym-gold/5 rounded p-3"><p className="text-gym-gold/60 text-xs">{tr('Reste', 'الباقي')}</p><p className="text-red-400 font-semibold">{formatDZD(payTarget.total_amount - payTarget.amount_paid)}</p></div>
               </div>
-              <div><Label>This payment</Label><Input type="number" min="0" step="0.01" value={payAmount} onChange={(e) => setPayAmount(e.target.value)} className="bg-gym-black border-gym-gold/30 text-gym-gold mt-1" /></div>
+              <div><Label>{tr('Ce paiement', 'هذا الدفع')}</Label><Input type="number" min="0" step="0.01" value={payAmount} onChange={(e) => setPayAmount(e.target.value)} className="bg-gym-black border-gym-gold/30 text-gym-gold mt-1" /></div>
               <DialogFooter className="gap-2">
-                <Button variant="ghost" onClick={() => { setPayTarget(null); setPayAmount(''); }}>Cancel</Button>
-                <Button onClick={doPay} className="gym-button"><DollarSign className="w-4 h-4 mr-2" />Save payment</Button>
+                <Button variant="ghost" onClick={() => { setPayTarget(null); setPayAmount(''); }}>{tr('Annuler', 'إلغاء')}</Button>
+                <Button onClick={doPay} className="gym-button"><DollarSign className="w-4 h-4 me-2" />{tr('Enregistrer le paiement', 'حفظ الدفع')}</Button>
               </DialogFooter>
             </div>
           )}
@@ -560,14 +561,14 @@ export const PurchaseInvoices: React.FC = () => {
       <AlertDialog open={toDelete !== null} onOpenChange={(o) => !o && setToDelete(null)}>
         <AlertDialogContent className="bg-gym-gray border-gym-gold/20 text-gym-gold">
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete {toDelete?.invoice_number}?</AlertDialogTitle>
+            <AlertDialogTitle>{tr('Supprimer', 'حذف')} {toDelete?.invoice_number} ?</AlertDialogTitle>
             <AlertDialogDescription className="text-gym-gold/60">
-              Stock already added by this purchase is not reversed. This cannot be undone.
+              {tr('Le stock déjà ajouté par cet achat n’est pas retiré. Action irréversible.', 'لن يُسترجع المخزون المضاف بهذا الشراء. لا يمكن التراجع.')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="bg-transparent border-gym-gold/30 text-gym-gold hover:bg-gym-gold/10">Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete} className="bg-red-600 text-white hover:bg-red-700">Delete</AlertDialogAction>
+            <AlertDialogCancel className="bg-transparent border-gym-gold/30 text-gym-gold hover:bg-gym-gold/10">{tr('Annuler', 'إلغاء')}</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-red-600 text-white hover:bg-red-700">{tr('Supprimer', 'حذف')}</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

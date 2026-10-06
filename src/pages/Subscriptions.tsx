@@ -13,7 +13,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Plus, Pencil, Trash2, Calendar, DollarSign, Users } from 'lucide-react';
+import { Plus, Pencil, Trash2, Calendar, Users } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { formatDZD } from '@/lib/utils';
 import { describeError } from '@/lib/supabase';
@@ -22,11 +22,13 @@ import {
   Subscription, SubscriptionInput, listSubscriptionTypes, createSubscriptionType,
   updateSubscriptionType, deleteSubscriptionType, subscriptionUsage,
 } from '@/lib/api/athletes';
+import { useLang } from '@/hooks/useLang';
 
 export const Subscriptions: React.FC = () => {
   const { can } = usePermissions();
+  const { tr } = useLang();
   const [types, setTypes] = useState<Subscription[]>([]);
-  const [usage, setUsage] = useState<Record<string, { members: number; revenue: number }>>({});
+  const [usage, setUsage] = useState<Record<string, { members: number }>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -54,8 +56,7 @@ export const Subscriptions: React.FC = () => {
 
   const totals = useMemo(() => {
     const members = Object.values(usage).reduce((s, u) => s + u.members, 0);
-    const revenue = Object.values(usage).reduce((s, u) => s + u.revenue, 0);
-    return { members, revenue };
+    return { members };
   }, [usage]);
 
   const openNew = () => {
@@ -77,7 +78,7 @@ export const Subscriptions: React.FC = () => {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.name.trim() || !form.price) {
-      toast({ title: 'Check the form', description: 'Name and price are required.', variant: 'destructive' });
+      toast({ title: tr('Vérifiez le formulaire', 'تحقق من النموذج'), description: tr('Le nom et le prix sont obligatoires.', 'الاسم والسعر مطلوبان.'), variant: 'destructive' });
       return;
     }
     const payload: SubscriptionInput = {
@@ -89,12 +90,12 @@ export const Subscriptions: React.FC = () => {
     };
     setSaving(true);
     try {
-      if (editing) { await updateSubscriptionType(editing.id, payload); toast({ title: 'Subscription updated' }); }
-      else { await createSubscriptionType(payload); toast({ title: 'Subscription created' }); }
+      if (editing) { await updateSubscriptionType(editing.id, payload); toast({ title: tr('Abonnement modifié', 'تم تعديل الاشتراك') }); }
+      else { await createSubscriptionType(payload); toast({ title: tr('Abonnement créé', 'تم إنشاء الاشتراك') }); }
       setDialogOpen(false);
       await load();
     } catch (err) {
-      toast({ title: 'Could not save', description: describeError(err), variant: 'destructive' });
+      toast({ title: tr('Enregistrement impossible', 'تعذر الحفظ'), description: describeError(err), variant: 'destructive' });
     } finally {
       setSaving(false);
     }
@@ -104,11 +105,11 @@ export const Subscriptions: React.FC = () => {
     if (!toDelete) return;
     try {
       await deleteSubscriptionType(toDelete.id);
-      toast({ title: 'Subscription deleted' });
+      toast({ title: tr('Abonnement supprimé', 'تم حذف الاشتراك') });
       setToDelete(null);
       await load();
     } catch (e) {
-      toast({ title: 'Could not delete', description: describeError(e), variant: 'destructive' });
+      toast({ title: tr('Suppression impossible', 'تعذر الحذف'), description: describeError(e), variant: 'destructive' });
     }
   };
 
@@ -117,86 +118,80 @@ export const Subscriptions: React.FC = () => {
       <div className="max-w-7xl mx-auto space-y-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h1 className="text-3xl font-bold gradient-text">Subscriptions</h1>
-            <p className="text-gym-gold/60 mt-1">Your membership plans.</p>
+            <h1 className="text-3xl font-bold gradient-text">{tr('Abonnements', 'الاشتراكات')}</h1>
+            <p className="text-gym-gold/60 mt-1">{tr('Vos formules d’abonnement.', 'باقات الاشتراك الخاصة بك.')}</p>
           </div>
           {can('subscriptions', 'create') && (
             <Button onClick={openNew} className="bg-gym-gold text-gym-black hover:bg-gym-gold/90">
-              <Plus className="w-4 h-4 mr-2" />New subscription
+              <Plus className="w-4 h-4 me-2" />{tr('Nouvel abonnement', 'اشتراك جديد')}
             </Button>
           )}
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Card className="bg-gym-gray border-gym-gold/20"><CardContent className="p-5 flex items-center justify-between">
-            <div><p className="text-gym-gold/60 text-sm">Plans</p><p className="text-2xl font-bold text-gym-gold">{types.length}</p></div>
+            <div><p className="text-gym-gold/60 text-sm">{tr('Formules', 'الباقات')}</p><p className="text-2xl font-bold text-gym-gold">{types.length}</p></div>
             <Calendar className="w-8 h-8 text-blue-400" />
           </CardContent></Card>
           <Card className="bg-gym-gray border-gym-gold/20"><CardContent className="p-5 flex items-center justify-between">
-            <div><p className="text-gym-gold/60 text-sm">Active members</p><p className="text-2xl font-bold text-green-400">{totals.members}</p></div>
+            <div><p className="text-gym-gold/60 text-sm">{tr('Membres actifs', 'الأعضاء النشطون')}</p><p className="text-2xl font-bold text-green-400">{totals.members}</p></div>
             <Users className="w-8 h-8 text-green-400" />
-          </CardContent></Card>
-          <Card className="bg-gym-gray border-gym-gold/20"><CardContent className="p-5 flex items-center justify-between">
-            <div><p className="text-gym-gold/60 text-sm">Revenue</p><p className="text-2xl font-bold text-gym-gold">{formatDZD(totals.revenue)}</p></div>
-            <DollarSign className="w-8 h-8 text-gym-gold" />
           </CardContent></Card>
         </div>
 
         <Card className="bg-gym-gray border-gym-gold/20">
           <CardHeader>
-            <CardTitle className="text-gym-gold">Plans</CardTitle>
-            <CardDescription className="text-gym-gold/60">Manage your subscription types.</CardDescription>
+            <CardTitle className="text-gym-gold">{tr('Formules', 'الباقات')}</CardTitle>
+            <CardDescription className="text-gym-gold/60">{tr('Gérez vos types d’abonnement.', 'إدارة أنواع الاشتراكات.')}</CardDescription>
           </CardHeader>
           <CardContent>
             {loading ? (
-              <p className="py-8 text-center text-gym-gold/40">Loading…</p>
+              <p className="py-8 text-center text-gym-gold/40">{tr('Chargement…', 'جارٍ التحميل…')}</p>
             ) : error ? (
               <div className="py-8 text-center space-y-3">
                 <p className="text-red-400">{error}</p>
-                <Button variant="outline" onClick={load} className="border-gym-gold/30 text-gym-gold hover:bg-gym-gold/10">Try again</Button>
+                <Button variant="outline" onClick={load} className="border-gym-gold/30 text-gym-gold hover:bg-gym-gold/10">{tr('Réessayer', 'إعادة المحاولة')}</Button>
               </div>
             ) : types.length === 0 ? (
-              <p className="py-8 text-center text-gym-gold/50">No plans yet.</p>
+              <p className="py-8 text-center text-gym-gold/50">{tr('Aucune formule pour le moment.', 'لا توجد باقات بعد.')}</p>
             ) : (
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow className="border-gym-gold/20">
-                      <TableHead className="text-gym-gold">Plan</TableHead>
-                      <TableHead className="text-gym-gold">Duration</TableHead>
-                      <TableHead className="text-gym-gold">Sessions</TableHead>
-                      <TableHead className="text-gym-gold">Price</TableHead>
-                      <TableHead className="text-gym-gold">Members</TableHead>
-                      <TableHead className="text-gym-gold">Revenue</TableHead>
-                      <TableHead className="text-gym-gold">Actions</TableHead>
+                      <TableHead className="text-gym-gold text-start">{tr('Formule', 'الباقة')}</TableHead>
+                      <TableHead className="text-gym-gold text-start">{tr('Durée', 'المدة')}</TableHead>
+                      <TableHead className="text-gym-gold text-start">{tr('Séances', 'الحصص')}</TableHead>
+                      <TableHead className="text-gym-gold text-start">{tr('Prix', 'السعر')}</TableHead>
+                      <TableHead className="text-gym-gold text-start">{tr('Membres', 'الأعضاء')}</TableHead>
+                      <TableHead className="text-gym-gold text-start">{tr('Actions', 'الإجراءات')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {types.map((s) => {
-                      const u = usage[s.id] ?? { members: 0, revenue: 0 };
+                      const u = usage[s.id] ?? { members: 0 };
                       return (
                         <TableRow key={s.id} className="border-gym-gold/10 hover:bg-gym-gold/5">
                           <TableCell className="text-gym-gold font-medium">{s.name}</TableCell>
                           <TableCell className="text-gym-gold">
-                            {s.is_open ? 'Open' : `${s.duration} days`}
+                            {s.is_open ? tr('Ouvert', 'مفتوح') : `${s.duration} ${tr('jours', 'يوم')}`}
                           </TableCell>
                           <TableCell className="text-gym-gold">{s.sessions ?? '—'}</TableCell>
                           <TableCell className="text-gym-gold font-semibold">{formatDZD(s.price)}</TableCell>
                           <TableCell>
                             <Badge variant="outline" className="bg-blue-500/20 text-blue-400 border-blue-500/30">{u.members}</Badge>
                           </TableCell>
-                          <TableCell className="text-green-400 font-semibold">{formatDZD(u.revenue)}</TableCell>
                           <TableCell>
                             <div className="flex gap-1">
                               {can('subscriptions', 'edit') && (
                                 <Button size="icon" variant="ghost" onClick={() => openEdit(s)}
-                                        className="h-7 w-7 text-gym-gold hover:bg-gym-gold/10" aria-label="Edit">
+                                        className="h-7 w-7 text-gym-gold hover:bg-gym-gold/10" aria-label={tr('Modifier', 'تعديل')}>
                                   <Pencil className="w-4 h-4" />
                                 </Button>
                               )}
                               {can('subscriptions', 'delete') && (
                                 <Button size="icon" variant="ghost" onClick={() => setToDelete(s)}
-                                        className="h-7 w-7 text-red-400 hover:bg-red-500/10" aria-label="Delete">
+                                        className="h-7 w-7 text-red-400 hover:bg-red-500/10" aria-label={tr('Supprimer', 'حذف')}>
                                   <Trash2 className="w-4 h-4" />
                                 </Button>
                               )}
@@ -216,33 +211,33 @@ export const Subscriptions: React.FC = () => {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="bg-gym-gray border-gym-gold/30 text-gym-gold">
           <DialogHeader>
-            <DialogTitle className="gradient-text">{editing ? 'Edit subscription' : 'New subscription'}</DialogTitle>
-            <DialogDescription className="text-gym-gold/60">Define a membership plan.</DialogDescription>
+            <DialogTitle className="gradient-text">{editing ? tr('Modifier l’abonnement', 'تعديل الاشتراك') : tr('Nouvel abonnement', 'اشتراك جديد')}</DialogTitle>
+            <DialogDescription className="text-gym-gold/60">{tr('Définissez une formule d’abonnement.', 'حدد باقة اشتراك.')}</DialogDescription>
           </DialogHeader>
           <form onSubmit={submit} className="space-y-4">
             <div className="space-y-1.5">
-              <Label>Name *</Label>
+              <Label>{tr('Nom', 'الاسم')} *</Label>
               <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })}
-                     className="gym-input" placeholder="Monthly, Quarterly…" />
+                     className="gym-input" placeholder={tr('Mensuel, Trimestriel…', 'شهري، فصلي…')} />
             </div>
 
             <div className="flex items-center justify-between rounded-lg border border-gym-gold/20 p-3">
               <div>
-                <Label className="cursor-pointer">Open subscription</Label>
-                <p className="text-[11px] text-gym-gold/40">No fixed session count</p>
+                <Label className="cursor-pointer">{tr('Abonnement ouvert', 'اشتراك مفتوح')}</Label>
+                <p className="text-[11px] text-gym-gold/40">{tr('Sans nombre de séances fixe', 'بدون عدد حصص محدد')}</p>
               </div>
               <Switch checked={form.open} onCheckedChange={(v) => setForm({ ...form, open: v })} />
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label>Duration (days)</Label>
+                <Label>{tr('Durée (jours)', 'المدة (أيام)')}</Label>
                 <Input type="number" value={form.duration} onChange={(e) => setForm({ ...form, duration: e.target.value })}
                        className="gym-input" placeholder="30" />
               </div>
               {!form.open && (
                 <div className="space-y-1.5">
-                  <Label>Sessions</Label>
+                  <Label>{tr('Séances', 'الحصص')}</Label>
                   <Input type="number" value={form.sessions} onChange={(e) => setForm({ ...form, sessions: e.target.value })}
                          className="gym-input" placeholder="12" />
                 </div>
@@ -250,14 +245,14 @@ export const Subscriptions: React.FC = () => {
             </div>
 
             <div className="space-y-1.5">
-              <Label>Price (DZD) *</Label>
+              <Label>{tr('Prix (DA)', 'السعر (دج)')} *</Label>
               <Input type="number" step="0.01" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })}
                      className="gym-input" placeholder="5000" />
             </div>
 
             <DialogFooter className="gap-2">
-              <Button type="button" variant="ghost" onClick={() => setDialogOpen(false)} disabled={saving}>Cancel</Button>
-              <Button type="submit" className="gym-button" disabled={saving}>{saving ? 'Saving…' : 'Save'}</Button>
+              <Button type="button" variant="ghost" onClick={() => setDialogOpen(false)} disabled={saving}>{tr('Annuler', 'إلغاء')}</Button>
+              <Button type="submit" className="gym-button" disabled={saving}>{saving ? tr('Enregistrement…', 'جارٍ الحفظ…') : tr('Enregistrer', 'حفظ')}</Button>
             </DialogFooter>
           </form>
         </DialogContent>
@@ -266,14 +261,14 @@ export const Subscriptions: React.FC = () => {
       <AlertDialog open={toDelete !== null} onOpenChange={(o) => !o && setToDelete(null)}>
         <AlertDialogContent className="bg-gym-gray border-gym-gold/20 text-gym-gold">
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete {toDelete?.name}?</AlertDialogTitle>
+            <AlertDialogTitle>{tr('Supprimer', 'حذف')} {toDelete?.name} ?</AlertDialogTitle>
             <AlertDialogDescription className="text-gym-gold/60">
-              Existing athlete subscriptions keep their recorded details; only the plan template is removed.
+              {tr('Les abonnements déjà attribués aux athlètes sont conservés ; seule la formule est supprimée.', 'تبقى اشتراكات الرياضيين المسجلة كما هي؛ يتم حذف الباقة فقط.')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="bg-transparent border-gym-gold/30 text-gym-gold hover:bg-gym-gold/10">Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete} className="bg-red-600 text-white hover:bg-red-700">Delete</AlertDialogAction>
+            <AlertDialogCancel className="bg-transparent border-gym-gold/30 text-gym-gold hover:bg-gym-gold/10">{tr('Annuler', 'إلغاء')}</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-red-600 text-white hover:bg-red-700">{tr('Supprimer', 'حذف')}</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

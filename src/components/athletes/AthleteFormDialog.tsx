@@ -15,7 +15,10 @@ import { formatDZD } from '@/lib/utils';
 import { describeError } from '@/lib/supabase';
 import { deleteByUrl, uploadImage } from '@/lib/storage';
 import { useAuth } from '@/contexts/AuthContext';
-import { useTranslation } from '@/lib/i18n';
+import { useTranslation, makeTr } from '@/lib/i18n';
+import type { AthleteSubscription } from '@/lib/api/athletes';
+import { getLatestSubscription, updateAthleteSubscription } from '@/lib/api/athleteExtras';
+import { SubscriptionFields, SubFields, subFieldsFrom } from './EditSubscriptionDialog';
 import {
   Athlete, AthleteInput, Sport, Subscription,
   createAthlete, updateAthlete, listSports, createSport, deleteSport,
@@ -32,8 +35,8 @@ interface Props {
 }
 
 const blank = (): AthleteInput => ({
-  first_name: '', last_name: '', email: null, phone: null,
-  date_of_birth: null, gender: null, address: null, sport_id: null,
+  first_name: '', last_name: '', phone: null,
+  date_of_birth: null, gender: null, sport_id: null,
   rfid_uid: null, photo_url: null,
 });
 
@@ -43,6 +46,7 @@ const NONE = '__none__';
 export const AthleteFormDialog: React.FC<Props> = ({ isOpen, onClose, athlete, onSaved, canSubscribe }) => {
   const { language } = useAuth();
   const { t } = useTranslation(language);
+  const tr = makeTr(language);
   const isEdit = athlete !== null;
 
   const [form, setForm] = useState<AthleteInput>(blank());
@@ -59,6 +63,10 @@ export const AthleteFormDialog: React.FC<Props> = ({ isOpen, onClose, athlete, o
   const [subTypeId, setSubTypeId] = useState(NONE);
   const [subPaymentDate, setSubPaymentDate] = useState(today());
   const [subAmountPaid, setSubAmountPaid] = useState('');
+
+  // Edit mode: latest subscription
+  const [lastSub, setLastSub] = useState<AthleteSubscription | null>(null);
+  const [lastFields, setLastFields] = useState<SubFields | null>(null);
 
   const selectedSub = useMemo(
     () => (subTypeId === NONE ? null : subTypes.find((s) => s.id === subTypeId) ?? null),
@@ -79,6 +87,12 @@ export const AthleteFormDialog: React.FC<Props> = ({ isOpen, onClose, athlete, o
         if (!active) return;
         setSports(s);
         setSubTypes(types);
+        if (athlete && canSubscribe) {
+          const last = await getLatestSubscription(athlete.id).catch(() => null);
+          if (!active) return;
+          setLastSub(last);
+          setLastFields(last ? subFieldsFrom(last) : null);
+        }
       } catch (e) {
         toast({ title: t('athX.couldNotLoad'), description: describeError(e), variant: 'destructive' });
       }
@@ -87,8 +101,8 @@ export const AthleteFormDialog: React.FC<Props> = ({ isOpen, onClose, athlete, o
     if (athlete) {
       setForm({
         first_name: athlete.first_name, last_name: athlete.last_name,
-        email: athlete.email, phone: athlete.phone, date_of_birth: athlete.date_of_birth,
-        gender: athlete.gender, address: athlete.address, sport_id: athlete.sport_id,
+        phone: athlete.phone, date_of_birth: athlete.date_of_birth,
+        gender: athlete.gender, sport_id: athlete.sport_id,
         rfid_uid: athlete.rfid_uid, photo_url: athlete.photo_url,
       });
       setPreview(athlete.photo_url);
@@ -97,6 +111,8 @@ export const AthleteFormDialog: React.FC<Props> = ({ isOpen, onClose, athlete, o
       setPreview(null);
     }
     setPhotoFile(null);
+    setLastSub(null);
+    setLastFields(null);
     setNewSport('');
     setManageSports(false);
     setSportPendingDelete(null);
@@ -160,6 +176,16 @@ export const AthleteFormDialog: React.FC<Props> = ({ isOpen, onClose, athlete, o
 
       if (isEdit && athlete) {
         await updateAthlete(athlete.id, payload);
+        if (lastSub && lastFields
+            && JSON.stringify(lastFields) !== JSON.stringify(subFieldsFrom(lastSub))) {
+          await updateAthleteSubscription(lastSub, {
+            name: lastFields.name || lastSub.name,
+            price: Number(lastFields.price) || 0,
+            payment_date: lastFields.payment_date || lastSub.payment_date,
+            expiry_date: lastFields.expiry_date || null,
+            amount_paid: Number(lastFields.amount_paid) || 0,
+          });
+        }
         // Free the storage used by a replaced or removed photo.
         if (athlete.photo_url && athlete.photo_url !== photoUrl) {
           void deleteByUrl('athlete-photos', athlete.photo_url);
@@ -230,15 +256,9 @@ export const AthleteFormDialog: React.FC<Props> = ({ isOpen, onClose, athlete, o
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label>{t('athX.phone')}</Label>
-              <Input value={form.phone ?? ''} onChange={(e) => set('phone', e.target.value)} className="gym-input" />
-            </div>
-            <div className="space-y-1.5">
-              <Label>{t('athX.email')}</Label>
-              <Input type="email" value={form.email ?? ''} onChange={(e) => set('email', e.target.value)} className="gym-input" />
-            </div>
+          <div className="space-y-1.5">
+            <Label>{t('athX.phone')}</Label>
+            <Input value={form.phone ?? ''} onChange={(e) => set('phone', e.target.value)} className="gym-input" />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
@@ -298,18 +318,18 @@ export const AthleteFormDialog: React.FC<Props> = ({ isOpen, onClose, athlete, o
                       <span className="flex items-center gap-1 text-xs">
                         <span className="text-gym-gold/60">{t('sports.deleteTitle')}</span>
                         <button type="button" onClick={() => removeSport(s.id)}
-                                className="p-1 rounded text-red-400 hover:bg-red-500/15" aria-label="confirm">
+                                className="p-1 rounded text-red-400 hover:bg-red-500/15" aria-label={tr('Confirmer', 'تأكيد')}>
                           <Check className="w-4 h-4" />
                         </button>
                         <button type="button" onClick={() => setSportPendingDelete(null)}
-                                className="p-1 rounded text-gym-gold/60 hover:bg-gym-gold/10" aria-label="cancel">
+                                className="p-1 rounded text-gym-gold/60 hover:bg-gym-gold/10" aria-label={tr('Annuler', 'إلغاء')}>
                           <X className="w-4 h-4" />
                         </button>
                       </span>
                     ) : (
                       <button type="button" onClick={() => setSportPendingDelete(s.id)}
                               className="p-1 rounded text-gym-gold/50 hover:text-red-400 hover:bg-red-500/10 transition-colors"
-                              aria-label="delete sport">
+                              aria-label={tr('Supprimer le sport', 'حذف الرياضة')}>
                         <Trash2 className="w-4 h-4" />
                       </button>
                     )}
@@ -319,17 +339,6 @@ export const AthleteFormDialog: React.FC<Props> = ({ isOpen, onClose, athlete, o
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label>{t('athX.rfidCard')}</Label>
-              <Input value={form.rfid_uid ?? ''} onChange={(e) => set('rfid_uid', e.target.value)}
-                     className="gym-input font-mono" placeholder="A3F2C1D4" data-rfid-input="true" />
-            </div>
-            <div className="space-y-1.5">
-              <Label>{t('athX.address')}</Label>
-              <Input value={form.address ?? ''} onChange={(e) => set('address', e.target.value)} className="gym-input" />
-            </div>
-          </div>
 
           {/* Inline subscription assignment (create mode only) */}
           {!isEdit && canSubscribe && (
@@ -379,6 +388,30 @@ export const AthleteFormDialog: React.FC<Props> = ({ isOpen, onClose, athlete, o
               )}
             </div>
           )}
+
+          {/* Edit mode: the latest subscription can be corrected here */}
+          {isEdit && canSubscribe && lastSub && lastFields && (
+            <div className="rounded-xl border border-gym-gold/25 bg-gym-black/40 p-4 space-y-3 animate-fade-in">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-gym-gold/15 flex items-center justify-center text-gym-gold">
+                  <CalendarCheck className="w-4 h-4" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-gym-gold">{tr('Dernier abonnement', 'آخر اشتراك')}</p>
+                  <p className="text-[11px] text-gym-gold/50">{tr('Modifiez les informations du dernier abonnement créé.', 'عدّل معلومات آخر اشتراك تم إنشاؤه.')}</p>
+                </div>
+              </div>
+              <SubscriptionFields value={lastFields} onChange={setLastFields} />
+            </div>
+          )}
+
+          {/* RFID is always the last field */}
+          <div className="space-y-1.5">
+            <Label>{t('athX.rfidCard')}</Label>
+            <Input value={form.rfid_uid ?? ''} onChange={(e) => set('rfid_uid', e.target.value)}
+                   className="gym-input font-mono" placeholder="A3F2C1D4" data-rfid-input="true" />
+            <p className="text-[11px] text-gym-gold/40">{tr('Cliquez ici puis passez la carte sur le lecteur.', 'انقر هنا ثم مرر البطاقة على القارئ.')}</p>
+          </div>
 
           <DialogFooter className="gap-2">
             <Button type="button" variant="ghost" onClick={onClose} disabled={saving}

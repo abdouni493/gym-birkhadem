@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { formatDZD, cn } from '@/lib/utils';
 import type { Worker } from '@/lib/api/workers';
+import { tr } from '@/lib/i18n';
 
 interface Props {
   worker: Worker;
@@ -44,11 +45,11 @@ export const WorkerCard: React.FC<Props> = ({
   const isAdmin = worker.roles?.is_admin === true;
 
   const menuActions = [
-    { key: 'permissions', label: 'Permissions', icon: Shield, fn: onPermissions },
-    { key: 'acompte', label: 'Acompte', icon: HandCoins, fn: onAcompte },
-    { key: 'absence', label: 'Absence', icon: CalendarX, fn: onAbsence },
-    { key: 'payment', label: 'Payment', icon: Wallet, fn: onPayment },
-    { key: 'account', label: worker.user_id ? 'Manage account' : 'Create account', icon: KeyRound, fn: onAccount },
+    { key: 'permissions', label: tr('Permissions', 'الصلاحيات'), icon: Shield, fn: onPermissions },
+    { key: 'acompte', label: tr('Acompte', 'تسبيق'), icon: HandCoins, fn: onAcompte },
+    { key: 'absence', label: tr('Absence', 'غياب'), icon: CalendarX, fn: onAbsence },
+    { key: 'payment', label: tr('Paiement', 'الدفع'), icon: Wallet, fn: onPayment },
+    { key: 'account', label: worker.user_id ? tr('Gérer le compte', 'إدارة الحساب') : tr('Créer un compte', 'إنشاء حساب'), icon: KeyRound, fn: onAccount },
   ].filter((a) => can(a.key));
 
   return (
@@ -68,18 +69,18 @@ export const WorkerCard: React.FC<Props> = ({
               <div className="flex flex-wrap items-center gap-1.5 mt-1">
                 <Badge className={cn('border-0 text-[10px] h-4',
                   isAdmin ? 'bg-purple-500/20 text-purple-300' : 'bg-gym-gold/20 text-gym-gold')}>
-                  {worker.roles?.name ?? 'No role'}
+                  {worker.roles?.name ?? tr('Sans rôle', 'بدون دور')}
                 </Badge>
                 {worker.status === 'inactive' && (
                   <Badge variant="outline" className="border-gym-gold/30 text-gym-gold/50 text-[10px] h-4">
-                    inactive
+                    {tr('inactif', 'غير نشط')}
                   </Badge>
                 )}
                 {worker.user_id && (
                   <Badge variant="outline"
                          className={cn('text-[10px] h-4',
                            worker.account_active ? 'border-blue-500/40 text-blue-300' : 'border-gym-gold/25 text-gym-gold/40')}>
-                    <KeyRound className="w-2.5 h-2.5 mr-0.5" />
+                    <KeyRound className="w-2.5 h-2.5 me-0.5" />
                     {worker.account_active ? 'login' : 'disabled'}
                   </Badge>
                 )}
@@ -91,7 +92,7 @@ export const WorkerCard: React.FC<Props> = ({
                 <DropdownMenuTrigger asChild>
                   <Button size="icon" variant="ghost"
                           className="h-8 w-8 text-gym-gold/50 hover:text-gym-gold shrink-0"
-                          aria-label="More actions">
+                          aria-label={tr('Plus d’actions', 'إجراءات أخرى')}>
                     <MoreVertical className="w-4 h-4" />
                   </Button>
                 </DropdownMenuTrigger>
@@ -99,7 +100,7 @@ export const WorkerCard: React.FC<Props> = ({
                   {menuActions.map((a) => (
                     <DropdownMenuItem key={a.key} onClick={() => a.fn(worker)}
                                       className="cursor-pointer focus:bg-gym-gold/15 focus:text-gym-gold">
-                      <a.icon className="w-4 h-4 mr-2" />{a.label}
+                      <a.icon className="w-4 h-4 me-2" />{a.label}
                     </DropdownMenuItem>
                   ))}
                   {can('delete') && (
@@ -107,7 +108,7 @@ export const WorkerCard: React.FC<Props> = ({
                       <DropdownMenuSeparator className="bg-gym-gold/20" />
                       <DropdownMenuItem onClick={() => setConfirmOpen(true)}
                                         className="cursor-pointer text-red-400 focus:bg-red-500/10 focus:text-red-400">
-                        <Trash2 className="w-4 h-4 mr-2" />Delete
+                        <Trash2 className="w-4 h-4 me-2" />{tr('Supprimer', 'حذف')}
                       </DropdownMenuItem>
                     </>
                   )}
@@ -124,14 +125,14 @@ export const WorkerCard: React.FC<Props> = ({
             </div>
             <div className="flex items-center gap-2 text-gym-gold/60">
               <CalendarDays className="w-3.5 h-3.5 shrink-0" />
-              <span>Since {worker.start_date}</span>
+              <span>{tr('Depuis le', 'منذ')} {worker.start_date}</span>
             </div>
             <div className="flex items-center gap-2 text-gym-gold/60">
               <Wallet className="w-3.5 h-3.5 shrink-0" />
               <span>
                 {worker.pay_enabled
                   ? `${formatDZD(worker.pay_amount)} / ${worker.pay_type === 'daily' ? 'day' : 'month'}`
-                  : 'Not paid via app'}
+                  : tr('Non payé via l’application', 'لا يُدفع عبر التطبيق')}
               </span>
             </div>
           </div>
@@ -141,19 +142,19 @@ export const WorkerCard: React.FC<Props> = ({
             {can('view') && (
               <Button size="sm" variant="outline" onClick={() => onView(worker)}
                       className="flex-1 border-gym-gold/30 text-gym-gold hover:bg-gym-gold/10">
-                <Eye className="w-3.5 h-3.5 mr-1.5" />View
+                <Eye className="w-3.5 h-3.5 me-1.5" />{tr('Voir', 'عرض')}
               </Button>
             )}
             {can('edit') && (
               <Button size="sm" variant="outline" onClick={() => onEdit(worker)}
                       className="flex-1 border-gym-gold/30 text-gym-gold hover:bg-gym-gold/10">
-                <Pencil className="w-3.5 h-3.5 mr-1.5" />Edit
+                <Pencil className="w-3.5 h-3.5 me-1.5" />{tr('Modifier', 'تعديل')}
               </Button>
             )}
             {can('delete') && (
               <Button size="sm" variant="outline" onClick={() => setConfirmOpen(true)}
                       className="flex-1 border-red-500/30 text-red-400 hover:bg-red-500/10">
-                <Trash2 className="w-3.5 h-3.5 mr-1.5" />Delete
+                <Trash2 className="w-3.5 h-3.5 me-1.5" />{tr('Supprimer', 'حذف')}
               </Button>
             )}
           </div>
@@ -163,20 +164,18 @@ export const WorkerCard: React.FC<Props> = ({
       <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
         <AlertDialogContent className="bg-gym-gray border-gym-gold/20 text-gym-gold">
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete {worker.full_name}?</AlertDialogTitle>
+            <AlertDialogTitle>{tr('Supprimer', 'حذف')} {worker.full_name} ?</AlertDialogTitle>
             <AlertDialogDescription className="text-gym-gold/60">
-              This permanently removes the worker along with their permissions, advances,
-              absences and payment history. Their login account is removed too.
-              This cannot be undone.
+              {tr('Ceci supprime définitivement l’employé ainsi que ses permissions, acomptes, absences et paiements. Son compte de connexion est aussi supprimé. Action irréversible.', 'سيؤدي هذا إلى حذف العامل نهائيًا مع صلاحياته وتسبيقاته وغياباته ومدفوعاته وحساب دخوله. لا يمكن التراجع.')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel className="bg-transparent border-gym-gold/30 text-gym-gold hover:bg-gym-gold/10">
-              Cancel
+              {tr('Annuler', 'إلغاء')}
             </AlertDialogCancel>
             <AlertDialogAction onClick={() => onDelete(worker)}
                                className="bg-red-600 text-white hover:bg-red-700">
-              Delete worker
+              {tr('Supprimer l’employé', 'حذف العامل')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

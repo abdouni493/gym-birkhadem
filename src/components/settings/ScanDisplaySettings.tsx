@@ -73,7 +73,7 @@ export const ScanDisplaySettings: React.FC = () => {
             {TESTS.map(({ key, label, tone }) => (
               <Button key={key} type="button" variant="outline" onClick={() => playVoice(key, { force: true })}
                       className={`bg-transparent ${tone}`}>
-                <Play className="w-4 h-4 mr-2" />{t('scanSettings.test')} — {t(label)}
+                <Play className="w-4 h-4 me-2" />{t('scanSettings.test')} — {t(label)}
               </Button>
             ))}
           </div>
@@ -88,7 +88,7 @@ export const ScanDisplaySettings: React.FC = () => {
         <CardContent className="space-y-5">
           <div className="space-y-2">
             <Button type="button" onClick={() => launchCustomerDisplay(t)} className="gym-button">
-              <MonitorSmartphone className="w-4 h-4 mr-2" />{t('scanSettings.openDisplay')}
+              <MonitorSmartphone className="w-4 h-4 me-2" />{t('scanSettings.openDisplay')}
             </Button>
             <p className="text-xs text-gym-gold/50">{t('scanSettings.sameComputerHint')}</p>
           </div>
@@ -112,7 +112,7 @@ export const ScanDisplaySettings: React.FC = () => {
                   <Input readOnly value={displayUrl} className="gym-input font-mono text-sm" onFocus={(e) => e.target.select()} />
                   <Button type="button" variant="outline" onClick={copyUrl}
                           className="border-gym-gold/40 text-gym-gold hover:bg-gym-gold/10 shrink-0">
-                    {copied ? <Check className="w-4 h-4 mr-2" /> : <Copy className="w-4 h-4 mr-2" />}
+                    {copied ? <Check className="w-4 h-4 me-2" /> : <Copy className="w-4 h-4 me-2" />}
                     {copied ? t('scanSettings.copied') : t('scanSettings.copy')}
                   </Button>
                 </div>

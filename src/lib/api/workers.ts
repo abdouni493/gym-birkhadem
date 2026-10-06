@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import type { AcompteRow, AbsenceRow, PaymentRow, PayType, UnpaidPeriod } from '@/lib/workerPay';
+import { tr } from '@/lib/i18n';
 
 export interface Role {
   id: string;
@@ -273,7 +274,7 @@ export interface RecordPaymentInput {
  * by hand — otherwise those advances would silently be deducted twice.
  */
 export async function recordPayment(input: RecordPaymentInput): Promise<string> {
-  if (input.periods.length === 0) throw new Error('Select at least one period to pay.');
+  if (input.periods.length === 0) throw new Error(tr('Choisissez au moins une période à payer.', 'اختر فترة واحدة على الأقل للدفع.'));
 
   const sorted = [...input.periods].sort((a, b) => a.start.localeCompare(b.start));
 

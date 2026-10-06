@@ -23,20 +23,23 @@ import {
   resolveRange, listTransactions, addTransaction, deleteTransaction,
   listRevenue, listExpenseStream, listOutstanding, getCaisseBalance,
 } from '@/lib/api/caisse';
+import { tr } from '@/lib/i18n';
 
 const today = () => new Date().toISOString().split('T')[0];
 
-const SOURCE_LABELS: Record<string, string> = {
-  subscription: 'Subscription',
-  free_session: 'Séance libre',
-  sale: 'Sale',
-  cash_deposit: 'Deposit',
-  expense: 'Expense',
-  worker_payment: 'Salary',
-  worker_acompte: 'Acompte',
-  purchase: 'Purchase',
-  cash_withdraw: 'Withdrawal',
-};
+const sourceLabels = (): Record<string, string> => ({
+  subscription: tr('Abonnement', 'اشتراك'),
+  free_session: tr('Séance libre', 'حصة حرة'),
+  extra_fee: tr('Frais supplémentaire', 'رسوم إضافية'),
+  debt_payment: tr('Paiement de dette', 'تسديد دين'),
+  sale: tr('Vente', 'بيع'),
+  cash_deposit: tr('Dépôt', 'إيداع'),
+  expense: tr('Dépense', 'مصروف'),
+  worker_payment: tr('Salaire', 'راتب'),
+  worker_acompte: tr('Acompte', 'تسبيق'),
+  purchase: tr('Achat', 'شراء'),
+  cash_withdraw: tr('Retrait', 'سحب'),
+});
 
 const StatCard: React.FC<{
   icon: React.ReactNode; label: string; value: string; tone?: 'in' | 'out' | 'neutral';
@@ -112,21 +115,21 @@ export const Caisse: React.FC = () => {
     e.preventDefault();
     const value = Number(amount);
     if (!value || value <= 0) {
-      toast({ title: 'Enter an amount', description: 'Must be greater than zero.', variant: 'destructive' });
+      toast({ title: tr('Saisissez un montant', 'أدخل مبلغًا'), description: tr('Doit être supérieur à zéro.', 'يجب أن يكون أكبر من صفر.'), variant: 'destructive' });
       return;
     }
     setSaving(true);
     try {
       await addTransaction({ direction, amount: value, transaction_date: txDate, description: desc || null });
       toast({
-        title: direction === 'deposit' ? 'Deposit recorded' : 'Withdrawal recorded',
+        title: direction === 'deposit' ? tr('Dépôt enregistré', 'تم تسجيل الإيداع') : tr('Retrait enregistré', 'تم تسجيل السحب'),
         description: formatDZD(value),
       });
       setAmount(''); setDesc(''); setTxDate(today());
       setDialogOpen(false);
       await load();
     } catch (err) {
-      toast({ title: 'Could not save transaction', description: describeError(err), variant: 'destructive' });
+      toast({ title: tr('Impossible d’enregistrer l’opération', 'تعذر حفظ العملية'), description: describeError(err), variant: 'destructive' });
     } finally {
       setSaving(false);
     }
@@ -135,23 +138,23 @@ export const Caisse: React.FC = () => {
   const removeTx = async (id: string) => {
     try {
       await deleteTransaction(id);
-      toast({ title: 'Transaction deleted' });
+      toast({ title: tr('Opération supprimée', 'تم حذف العملية') });
       await load();
     } catch (e) {
-      toast({ title: 'Could not delete', description: describeError(e), variant: 'destructive' });
+      toast({ title: tr('Suppression impossible', 'تعذر الحذف'), description: describeError(e), variant: 'destructive' });
     }
   };
 
   const StreamList: React.FC<{ rows: StreamEntry[]; tone: 'in' | 'out' }> = ({ rows, tone }) => (
     rows.length === 0 ? (
-      <p className="text-sm text-gym-gold/40 py-8 text-center">Nothing in this period.</p>
+      <p className="text-sm text-gym-gold/40 py-8 text-center">{tr('Rien sur cette période.', 'لا شيء في هذه الفترة.')}</p>
     ) : (
       <div className="space-y-1.5">
         {rows.map((r) => (
           <div key={`${r.source}-${r.ref_id}`}
                className="flex items-center gap-3 p-3 rounded-lg border border-gym-gold/15 hover:border-gym-gold/30 transition-colors">
             <Badge variant="outline" className="border-gym-gold/25 text-gym-gold/60 text-[10px] h-5 shrink-0">
-              {SOURCE_LABELS[r.source] ?? r.source}
+              {sourceLabels()[r.source] ?? r.source}
             </Badge>
             <div className="flex-1 min-w-0">
               <p className="text-sm text-gym-gold/90 truncate">{r.label}</p>
@@ -173,12 +176,12 @@ export const Caisse: React.FC = () => {
         {/* Header */}
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h1 className="text-3xl font-bold gradient-text">Caisse</h1>
-            <p className="text-gym-gold/60 mt-1">Cash movements, balance and outstanding payments.</p>
+            <h1 className="text-3xl font-bold gradient-text">{tr('Caisse', 'الصندوق')}</h1>
+            <p className="text-gym-gold/60 mt-1">{tr('Mouvements, solde et paiements en attente.', 'الحركات والرصيد والمدفوعات المعلقة.')}</p>
           </div>
           {can('caisse', 'create') && (
             <Button onClick={() => setDialogOpen(true)} className="bg-gym-gold text-gym-black hover:bg-gym-gold/90">
-              <Plus className="w-4 h-4 mr-2" />New transaction
+              <Plus className="w-4 h-4 me-2" />{tr('Nouvelle opération', 'عملية جديدة')}
             </Button>
           )}
         </div>
@@ -186,14 +189,14 @@ export const Caisse: React.FC = () => {
         {/* Stats */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {can('caisse', 'view_balance') && (
-            <StatCard icon={<Wallet className="w-5 h-5" />} label="In the caisse"
+            <StatCard icon={<Wallet className="w-5 h-5" />} label={tr('En caisse', 'في الصندوق')}
                       value={formatDZD(balance.balance)} />
           )}
-          <StatCard icon={<TrendingUp className="w-5 h-5" />} label="In (period)"
+          <StatCard icon={<TrendingUp className="w-5 h-5" />} label={tr('Entrées (période)', 'المداخيل (الفترة)')}
                     value={formatDZD(periodIn)} tone="in" />
-          <StatCard icon={<TrendingDown className="w-5 h-5" />} label="Out (period)"
+          <StatCard icon={<TrendingDown className="w-5 h-5" />} label={tr('Sorties (période)', 'المخارج (الفترة)')}
                     value={formatDZD(periodOut)} tone="out" />
-          <StatCard icon={<AlertCircle className="w-5 h-5" />} label="Unpaid by athletes"
+          <StatCard icon={<AlertCircle className="w-5 h-5" />} label={tr('Impayés des athlètes', 'مستحقات على الرياضيين')}
                     value={formatDZD(totalDebt)} tone="out" />
         </div>
 
@@ -202,8 +205,8 @@ export const Caisse: React.FC = () => {
           <CardContent className="p-4 space-y-3">
             <div className="flex flex-wrap gap-2">
               {([
-                ['today', 'Today'], ['week', 'Last 7 days'],
-                ['month', 'Last 30 days'], ['custom', 'Custom period'], ['all', 'All time'],
+                ['today', tr('Aujourd’hui', 'اليوم')], ['week', tr('7 derniers jours', 'آخر 7 أيام')],
+                ['month', tr('30 derniers jours', 'آخر 30 يومًا')], ['custom', tr('Période personnalisée', 'فترة مخصصة')], ['all', tr('Tout', 'كل الفترات')],
               ] as [RangePreset, string][]).map(([key, label]) => (
                 <Button key={key} size="sm"
                         variant={preset === key ? 'default' : 'outline'}
@@ -219,25 +222,25 @@ export const Caisse: React.FC = () => {
             {preset === 'custom' && (
               <div className="flex flex-wrap items-end gap-3">
                 <div className="space-y-1.5">
-                  <Label className="text-xs">From</Label>
+                  <Label className="text-xs">{tr('Du', 'من')}</Label>
                   <Input type="date" value={custom.from}
                          onChange={(e) => setCustom((c) => ({ ...c, from: e.target.value }))}
                          className="bg-gym-black border-gym-gold/30 text-gym-gold w-44" />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs">To</Label>
+                  <Label className="text-xs">{tr('Au', 'إلى')}</Label>
                   <Input type="date" value={custom.to}
                          onChange={(e) => setCustom((c) => ({ ...c, to: e.target.value }))}
                          className="bg-gym-black border-gym-gold/30 text-gym-gold w-44" />
                 </div>
                 {custom.from > custom.to && (
-                  <p className="text-xs text-red-400 pb-2">The start date is after the end date.</p>
+                  <p className="text-xs text-red-400 pb-2">{tr('La date de début est après la date de fin.', 'تاريخ البداية بعد تاريخ النهاية.')}</p>
                 )}
               </div>
             )}
 
             <p className="text-xs text-gym-gold/40">
-              Showing {range.from} → {range.to}
+              {tr('Période :', 'الفترة:')} {range.from} → {range.to}
             </p>
           </CardContent>
         </Card>
@@ -245,10 +248,10 @@ export const Caisse: React.FC = () => {
         {error ? (
           <Card className="bg-gym-gray border-red-500/30">
             <CardContent className="p-8 text-center space-y-3">
-              <p className="text-red-400 font-medium">Could not load the caisse</p>
+              <p className="text-red-400 font-medium">{tr('Impossible de charger la caisse', 'تعذر تحميل الصندوق')}</p>
               <p className="text-sm text-gym-gold/50">{error}</p>
               <Button variant="outline" onClick={load}
-                      className="border-gym-gold/30 text-gym-gold hover:bg-gym-gold/10">Try again</Button>
+                      className="border-gym-gold/30 text-gym-gold hover:bg-gym-gold/10">{tr('Réessayer', 'إعادة المحاولة')}</Button>
             </CardContent>
           </Card>
         ) : (
@@ -273,7 +276,7 @@ export const Caisse: React.FC = () => {
             <Card className="bg-gym-gray border-gym-gold/20 mt-4">
               <CardContent className="p-4">
                 {loading ? (
-                  <p className="py-12 text-center text-gym-gold/40">Loading…</p>
+                  <p className="py-12 text-center text-gym-gold/40">{tr('Chargement…', 'جارٍ التحميل…')}</p>
                 ) : (
                   <>
                     <TabsContent value="revenue" className="mt-0">
@@ -287,7 +290,7 @@ export const Caisse: React.FC = () => {
                     <TabsContent value="transactions" className="mt-0">
                       {transactions.length === 0 ? (
                         <p className="text-sm text-gym-gold/40 py-8 text-center">
-                          No manual transactions in this period.
+                          {tr('Aucune opération manuelle sur cette période.', 'لا توجد عمليات يدوية في هذه الفترة.')}
                         </p>
                       ) : (
                         <div className="space-y-1.5">
@@ -311,7 +314,7 @@ export const Caisse: React.FC = () => {
                               {can('caisse', 'delete') && (
                                 <Button size="icon" variant="ghost" onClick={() => removeTx(t.id)}
                                         className="h-7 w-7 text-red-400 hover:bg-red-500/10 shrink-0"
-                                        aria-label="Delete transaction">
+                                        aria-label={tr('Supprimer l’opération', 'حذف العملية')}>
                                   <Trash2 className="w-3.5 h-3.5" />
                                 </Button>
                               )}
@@ -324,7 +327,7 @@ export const Caisse: React.FC = () => {
                     <TabsContent value="outstanding" className="mt-0">
                       {outstanding.length === 0 ? (
                         <p className="text-sm text-gym-gold/40 py-8 text-center">
-                          Every athlete is paid up.
+                          {tr('Tous les athlètes sont à jour.', 'كل الرياضيين سددوا ما عليهم.')}
                         </p>
                       ) : (
                         <div className="space-y-1.5">
@@ -342,12 +345,12 @@ export const Caisse: React.FC = () => {
                                   {o.subscription_name} · {o.phone || 'no phone'}
                                 </p>
                               </div>
-                              <div className="text-right shrink-0">
+                              <div className="text-end shrink-0">
                                 <p className="text-xs text-gym-gold/40">
                                   {formatDZD(o.amount_paid)} / {formatDZD(o.price)}
                                 </p>
                                 <p className="text-sm font-semibold text-red-400">
-                                  {formatDZD(o.remaining)} due
+                                  {formatDZD(o.remaining)} {tr('dû', 'مستحق')}
                                 </p>
                               </div>
                             </div>
@@ -367,9 +370,9 @@ export const Caisse: React.FC = () => {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="bg-gym-gray border-gym-gold/20 text-gym-gold max-w-md">
           <DialogHeader>
-            <DialogTitle className="gradient-text">New transaction</DialogTitle>
+            <DialogTitle className="gradient-text">{tr('Nouvelle opération', 'عملية جديدة')}</DialogTitle>
             <DialogDescription className="text-gym-gold/60">
-              Record money put into or taken out of the caisse.
+              {tr('Enregistrez l’argent déposé ou retiré de la caisse.', 'سجّل الأموال المودعة أو المسحوبة من الصندوق.')}
             </DialogDescription>
           </DialogHeader>
 
@@ -380,40 +383,40 @@ export const Caisse: React.FC = () => {
                 direction === 'deposit' ? 'border-green-500/50 bg-green-500/10' : 'border-gym-gold/20')}>
                 <RadioGroupItem value="deposit" className="border-gym-gold/50 text-gym-gold" />
                 <ArrowDownCircle className="w-4 h-4 text-green-400" />
-                <span className="text-sm">Deposit</span>
+                <span className="text-sm">{tr('Dépôt', 'إيداع')}</span>
               </label>
               <label className={cn('flex items-center gap-2 rounded-lg border p-3 cursor-pointer transition-colors',
                 direction === 'withdraw' ? 'border-red-500/50 bg-red-500/10' : 'border-gym-gold/20')}>
                 <RadioGroupItem value="withdraw" className="border-gym-gold/50 text-gym-gold" />
                 <ArrowUpCircle className="w-4 h-4 text-red-400" />
-                <span className="text-sm">Withdraw</span>
+                <span className="text-sm">{tr('Retrait', 'سحب')}</span>
               </label>
             </RadioGroup>
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label>Amount (DZD) *</Label>
+                <Label>{tr('Montant (DA)', 'المبلغ (دج)')} *</Label>
                 <Input type="number" min="0" step="0.01" value={amount}
                        onChange={(e) => setAmount(e.target.value)} className="gym-input" placeholder="1000" />
               </div>
               <div className="space-y-1.5">
-                <Label>Date *</Label>
+                <Label>{tr('Date', 'التاريخ')} *</Label>
                 <Input type="date" value={txDate} onChange={(e) => setTxDate(e.target.value)} className="gym-input" />
               </div>
             </div>
 
             <div className="space-y-1.5">
-              <Label>Description</Label>
+              <Label>{tr('Description', 'الوصف')}</Label>
               <Textarea value={desc} onChange={(e) => setDesc(e.target.value)}
-                        className="gym-input min-h-[70px]" placeholder="What was this for?" />
+                        className="gym-input min-h-[70px]" placeholder={tr('C’était pour quoi ?', 'لأي غرض؟')} />
             </div>
 
             <DialogFooter className="gap-2">
               <Button type="button" variant="ghost" onClick={() => setDialogOpen(false)} disabled={saving}>
-                Cancel
+                {tr('Annuler', 'إلغاء')}
               </Button>
               <Button type="submit" className="gym-button" disabled={saving}>
-                {saving ? 'Saving…' : 'Save transaction'}
+                {saving ? tr('Enregistrement…', 'جارٍ الحفظ…') : tr('Enregistrer l’opération', 'حفظ العملية')}
               </Button>
             </DialogFooter>
           </form>

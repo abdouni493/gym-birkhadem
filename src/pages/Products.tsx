@@ -23,13 +23,14 @@ import { ProductFormDialog } from '@/components/products/ProductFormDialog';
 import { ViewToggle, ViewMode } from '@/components/common/ViewToggle';
 import { Barcode } from '@/components/common/Barcode';
 import { printBarcodes } from '@/lib/barcode';
+import { tr } from '@/lib/i18n';
 
 const statusBadge = (s: ProductStatus) => {
   switch (s) {
-    case 'out_of_stock': return <Badge className="bg-red-500/20 text-red-400 border border-red-500/30">Out of stock</Badge>;
-    case 'critical': return <Badge className="bg-red-500/20 text-red-400 border border-red-500/30">Critical</Badge>;
-    case 'low_stock': return <Badge className="bg-orange-500/20 text-orange-400 border border-orange-500/30">Low stock</Badge>;
-    default: return <Badge className="bg-green-500/20 text-green-400 border border-green-500/30">In stock</Badge>;
+    case 'out_of_stock': return <Badge className="bg-red-500/20 text-red-400 border border-red-500/30">{tr('Rupture de stock', 'نفد من المخزون')}</Badge>;
+    case 'critical': return <Badge className="bg-red-500/20 text-red-400 border border-red-500/30">{tr('Critique', 'حرج')}</Badge>;
+    case 'low_stock': return <Badge className="bg-orange-500/20 text-orange-400 border border-orange-500/30">{tr('Stock faible', 'مخزون منخفض')}</Badge>;
+    default: return <Badge className="bg-green-500/20 text-green-400 border border-green-500/30">{tr('En stock', 'متوفر')}</Badge>;
   }
 };
 
@@ -85,11 +86,11 @@ export const Products: React.FC = () => {
     if (!toDelete) return;
     try {
       await deleteProduct(toDelete.id);
-      toast({ title: 'Product deleted' });
+      toast({ title: tr('Produit supprimé', 'تم حذف المنتج') });
       setToDelete(null);
       await load();
     } catch (e) {
-      toast({ title: 'Could not delete', description: describeError(e), variant: 'destructive' });
+      toast({ title: tr('Suppression impossible', 'تعذر الحذف'), description: describeError(e), variant: 'destructive' });
     }
   };
 
@@ -98,27 +99,27 @@ export const Products: React.FC = () => {
       <div className="max-w-7xl mx-auto space-y-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h1 className="text-3xl font-bold gradient-text">Stock</h1>
-            <p className="text-gym-gold/60 mt-1">Products and inventory.</p>
+            <h1 className="text-3xl font-bold gradient-text">{tr('Stock', 'المخزون')}</h1>
+            <p className="text-gym-gold/60 mt-1">{tr('Produits et inventaire.', 'المنتجات والجرد.')}</p>
           </div>
           {can('products', 'create') && (
             <Button onClick={() => { setEditProduct(null); setFormOpen(true); }} className="bg-gym-gold text-gym-black hover:bg-gym-gold/90">
-              <Plus className="w-4 h-4 mr-2" />New product
+              <Plus className="w-4 h-4 me-2" />{tr('Nouveau produit', 'منتج جديد')}
             </Button>
           )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Card className="bg-gym-gray border-gym-gold/20"><CardContent className="p-5 flex items-center justify-between">
-            <div><p className="text-gym-gold/60 text-sm">Products</p><p className="text-2xl font-bold text-gym-gold">{products.length}</p></div>
+            <div><p className="text-gym-gold/60 text-sm">{tr('Produits', 'المنتجات')}</p><p className="text-2xl font-bold text-gym-gold">{products.length}</p></div>
             <Package className="w-8 h-8 text-blue-400" />
           </CardContent></Card>
           <Card className="bg-gym-gray border-gym-gold/20"><CardContent className="p-5 flex items-center justify-between">
-            <div><p className="text-gym-gold/60 text-sm">Low stock</p><p className="text-2xl font-bold text-red-400">{lowStock}</p></div>
+            <div><p className="text-gym-gold/60 text-sm">{tr('Stock faible', 'مخزون منخفض')}</p><p className="text-2xl font-bold text-red-400">{lowStock}</p></div>
             <AlertTriangle className="w-8 h-8 text-red-400" />
           </CardContent></Card>
           <Card className="bg-gym-gray border-gym-gold/20"><CardContent className="p-5 flex items-center justify-between">
-            <div><p className="text-gym-gold/60 text-sm">Stock value</p><p className="text-2xl font-bold text-green-400">{formatDZD(totalValue)}</p></div>
+            <div><p className="text-gym-gold/60 text-sm">{tr('Valeur du stock', 'قيمة المخزون')}</p><p className="text-2xl font-bold text-green-400">{formatDZD(totalValue)}</p></div>
             <TrendingUp className="w-8 h-8 text-green-400" />
           </CardContent></Card>
         </div>
@@ -126,43 +127,43 @@ export const Products: React.FC = () => {
         <Card className="bg-gym-gray border-gym-gold/20">
           <CardContent className="p-4 flex flex-col lg:flex-row gap-3">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gym-gold/50 w-4 h-4" />
-              <Input placeholder="Search by name or barcode…" value={search} onChange={(e) => setSearch(e.target.value)}
-                     className="pl-10 bg-gym-black border-gym-gold/30 text-gym-gold" />
+              <Search className="absolute start-3 top-1/2 -translate-y-1/2 text-gym-gold/50 w-4 h-4" />
+              <Input placeholder={tr('Rechercher par nom ou code-barres…', 'ابحث بالاسم أو الباركود…')} value={search} onChange={(e) => setSearch(e.target.value)}
+                     className="ps-10 bg-gym-black border-gym-gold/30 text-gym-gold" />
             </div>
             <Select value={brandFilter} onValueChange={setBrandFilter}>
-              <SelectTrigger className="w-full lg:w-48 bg-gym-black border-gym-gold/30 text-gym-gold"><SelectValue placeholder="All brands" /></SelectTrigger>
+              <SelectTrigger className="w-full lg:w-48 bg-gym-black border-gym-gold/30 text-gym-gold"><SelectValue placeholder={tr('Toutes les marques', 'كل العلامات')} /></SelectTrigger>
               <SelectContent className="bg-gym-gray border-gym-gold/30 text-gym-gold">
-                <SelectItem value="all">All brands</SelectItem>
+                <SelectItem value="all">{tr('Toutes les marques', 'كل العلامات')}</SelectItem>
                 {brands.map((b) => <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>)}
               </SelectContent>
             </Select>
             <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-              <SelectTrigger className="w-full lg:w-48 bg-gym-black border-gym-gold/30 text-gym-gold"><SelectValue placeholder="All categories" /></SelectTrigger>
+              <SelectTrigger className="w-full lg:w-48 bg-gym-black border-gym-gold/30 text-gym-gold"><SelectValue placeholder={tr('Toutes les catégories', 'كل الفئات')} /></SelectTrigger>
               <SelectContent className="bg-gym-gray border-gym-gold/30 text-gym-gold">
-                <SelectItem value="all">All categories</SelectItem>
+                <SelectItem value="all">{tr('Toutes les catégories', 'كل الفئات')}</SelectItem>
                 {categories.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
               </SelectContent>
             </Select>
-            <ViewToggle mode={viewMode} onChange={setViewMode} cardsLabel="Cards" tableLabel="Table" />
+            <ViewToggle mode={viewMode} onChange={setViewMode} cardsLabel={tr('Cartes', 'بطاقات')} tableLabel={tr('Tableau', 'جدول')} />
           </CardContent>
         </Card>
 
         {loading ? (
-          <Card className="bg-gym-gray border-gym-gold/20"><CardContent className="p-12 text-center text-gym-gold/40">Loading…</CardContent></Card>
+          <Card className="bg-gym-gray border-gym-gold/20"><CardContent className="p-12 text-center text-gym-gold/40">{tr('Chargement…', 'جارٍ التحميل…')}</CardContent></Card>
         ) : error ? (
           <Card className="bg-gym-gray border-red-500/30">
             <CardContent className="p-8 text-center space-y-3">
-              <p className="text-red-400 font-medium">Could not load products</p>
+              <p className="text-red-400 font-medium">{tr('Impossible de charger les produits', 'تعذر تحميل المنتجات')}</p>
               <p className="text-sm text-gym-gold/50">{error}</p>
-              <Button variant="outline" onClick={load} className="border-gym-gold/30 text-gym-gold hover:bg-gym-gold/10">Try again</Button>
+              <Button variant="outline" onClick={load} className="border-gym-gold/30 text-gym-gold hover:bg-gym-gold/10">{tr('Réessayer', 'إعادة المحاولة')}</Button>
             </CardContent>
           </Card>
         ) : filtered.length === 0 ? (
           <Card className="bg-gym-gray border-gym-gold/20">
             <CardContent className="p-12 text-center">
               <Package className="w-12 h-12 mx-auto mb-3 text-gym-gold/20" />
-              <p className="text-gym-gold/60">No products found.</p>
+              <p className="text-gym-gold/60">{tr('Aucun produit trouvé.', 'لم يتم العثور على منتجات.')}</p>
             </CardContent>
           </Card>
         ) : viewMode === 'cards' ? (
@@ -182,12 +183,12 @@ export const Products: React.FC = () => {
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div className="grid grid-cols-2 gap-2 text-sm">
-                    <div className="bg-gym-gold/5 rounded p-2"><p className="text-gym-gold/60 text-xs">Principal</p><p className="text-gym-gold font-semibold">{p.initial_quantity}</p></div>
-                    <div className="bg-gym-gold/5 rounded p-2"><p className="text-gym-gold/60 text-xs">Rest</p>
+                    <div className="bg-gym-gold/5 rounded p-2"><p className="text-gym-gold/60 text-xs">{tr('Initial', 'الأولي')}</p><p className="text-gym-gold font-semibold">{p.initial_quantity}</p></div>
+                    <div className="bg-gym-gold/5 rounded p-2"><p className="text-gym-gold/60 text-xs">{tr('Reste', 'الباقي')}</p>
                       <p className={p.current_stock <= p.min_stock_level ? 'text-red-400 font-semibold' : 'text-gym-gold font-semibold'}>{p.current_stock}</p></div>
                   </div>
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-gym-gold/60">Sell price</span>
+                    <span className="text-gym-gold/60">{tr('Prix de vente', 'سعر البيع')}</span>
                     <span className="text-gym-gold font-semibold">{formatDZD(p.sell_price)}</span>
                   </div>
                   <div className="flex gap-2 pt-1">
@@ -209,14 +210,14 @@ export const Products: React.FC = () => {
               <Table>
                 <TableHeader>
                   <TableRow className="border-gym-gold/20 hover:bg-gym-gold/5">
-                    <TableHead className="text-gym-gold">Name</TableHead>
-                    <TableHead className="text-gym-gold">Brand</TableHead>
-                    <TableHead className="text-gym-gold">Category</TableHead>
-                    <TableHead className="text-gym-gold text-right">Principal</TableHead>
-                    <TableHead className="text-gym-gold text-right">Rest</TableHead>
-                    <TableHead className="text-gym-gold text-right">Sell</TableHead>
-                    <TableHead className="text-gym-gold">Status</TableHead>
-                    <TableHead className="text-gym-gold">Actions</TableHead>
+                    <TableHead className="text-gym-gold">{tr('Nom', 'الاسم')}</TableHead>
+                    <TableHead className="text-gym-gold">{tr('Marque', 'العلامة')}</TableHead>
+                    <TableHead className="text-gym-gold">{tr('Catégorie', 'الفئة')}</TableHead>
+                    <TableHead className="text-gym-gold text-end">{tr('Initial', 'الأولي')}</TableHead>
+                    <TableHead className="text-gym-gold text-end">{tr('Reste', 'الباقي')}</TableHead>
+                    <TableHead className="text-gym-gold text-end">{tr('Vente', 'البيع')}</TableHead>
+                    <TableHead className="text-gym-gold">{tr('Statut', 'الحالة')}</TableHead>
+                    <TableHead className="text-gym-gold">{tr('Actions', 'الإجراءات')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -225,9 +226,9 @@ export const Products: React.FC = () => {
                       <TableCell className="text-gym-gold font-medium">{p.name}</TableCell>
                       <TableCell className="text-gym-gold/80">{p.brands?.name || '—'}</TableCell>
                       <TableCell className="text-gym-gold/80">{p.categories?.name || '—'}</TableCell>
-                      <TableCell className="text-gym-gold text-right">{p.initial_quantity}</TableCell>
-                      <TableCell className="text-right"><span className={p.current_stock <= p.min_stock_level ? 'text-red-400 font-semibold' : 'text-gym-gold'}>{p.current_stock}</span></TableCell>
-                      <TableCell className="text-gym-gold text-right">{formatDZD(p.sell_price)}</TableCell>
+                      <TableCell className="text-gym-gold text-end">{p.initial_quantity}</TableCell>
+                      <TableCell className="text-end"><span className={p.current_stock <= p.min_stock_level ? 'text-red-400 font-semibold' : 'text-gym-gold'}>{p.current_stock}</span></TableCell>
+                      <TableCell className="text-gym-gold text-end">{formatDZD(p.sell_price)}</TableCell>
                       <TableCell>{statusBadge(p.status)}</TableCell>
                       <TableCell>
                         <div className="flex gap-1">
@@ -253,7 +254,7 @@ export const Products: React.FC = () => {
 
       <Dialog open={!!viewProduct} onOpenChange={(o) => !o && setViewProduct(null)}>
         <DialogContent className="max-w-lg bg-gym-gray border-gym-gold/30 text-gym-gold">
-          <DialogHeader><DialogTitle className="gradient-text">Product details</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle className="gradient-text">{tr('Détails du produit', 'تفاصيل المنتج')}</DialogTitle></DialogHeader>
           {viewProduct && (
             <div className="space-y-4">
               <div>
@@ -262,20 +263,20 @@ export const Products: React.FC = () => {
               </div>
               {viewProduct.description && <p className="text-gym-gold/80 text-sm">{viewProduct.description}</p>}
               <div className="grid grid-cols-2 gap-3 text-sm">
-                <div className="bg-gym-gold/5 rounded p-3"><p className="text-gym-gold/60 text-xs">Principal</p><p className="font-semibold">{viewProduct.initial_quantity}</p></div>
-                <div className="bg-gym-gold/5 rounded p-3"><p className="text-gym-gold/60 text-xs">Rest</p><p className="font-semibold">{viewProduct.current_stock}</p></div>
-                <div className="bg-gym-gold/5 rounded p-3"><p className="text-gym-gold/60 text-xs">Cost</p><p className="font-semibold">{formatDZD(viewProduct.real_price)}</p></div>
-                <div className="bg-gym-gold/5 rounded p-3"><p className="text-gym-gold/60 text-xs">Sell</p><p className="font-semibold">{formatDZD(viewProduct.sell_price)}</p></div>
-                <div className="bg-gym-gold/5 rounded p-3"><p className="text-gym-gold/60 text-xs">Min stock</p><p className="font-semibold">{viewProduct.min_stock_level}</p></div>
-                <div className="bg-gym-gold/5 rounded p-3"><p className="text-gym-gold/60 text-xs">Sold</p><p className="font-semibold">{viewProduct.sold}</p></div>
-                {viewProduct.expiry_date && <div className="bg-gym-gold/5 rounded p-3"><p className="text-gym-gold/60 text-xs">Expiry</p><p className="font-semibold">{viewProduct.expiry_date}</p></div>}
-                <div className="bg-gym-gold/5 rounded p-3"><p className="text-gym-gold/60 text-xs">Status</p><div className="mt-1">{statusBadge(productStatus(viewProduct.current_stock, viewProduct.min_stock_level))}</div></div>
+                <div className="bg-gym-gold/5 rounded p-3"><p className="text-gym-gold/60 text-xs">{tr('Initial', 'الأولي')}</p><p className="font-semibold">{viewProduct.initial_quantity}</p></div>
+                <div className="bg-gym-gold/5 rounded p-3"><p className="text-gym-gold/60 text-xs">{tr('Reste', 'الباقي')}</p><p className="font-semibold">{viewProduct.current_stock}</p></div>
+                <div className="bg-gym-gold/5 rounded p-3"><p className="text-gym-gold/60 text-xs">{tr('Coût', 'التكلفة')}</p><p className="font-semibold">{formatDZD(viewProduct.real_price)}</p></div>
+                <div className="bg-gym-gold/5 rounded p-3"><p className="text-gym-gold/60 text-xs">{tr('Vente', 'البيع')}</p><p className="font-semibold">{formatDZD(viewProduct.sell_price)}</p></div>
+                <div className="bg-gym-gold/5 rounded p-3"><p className="text-gym-gold/60 text-xs">{tr('Stock min.', 'الحد الأدنى')}</p><p className="font-semibold">{viewProduct.min_stock_level}</p></div>
+                <div className="bg-gym-gold/5 rounded p-3"><p className="text-gym-gold/60 text-xs">{tr('Vendu', 'المباع')}</p><p className="font-semibold">{viewProduct.sold}</p></div>
+                {viewProduct.expiry_date && <div className="bg-gym-gold/5 rounded p-3"><p className="text-gym-gold/60 text-xs">{tr('Expiration', 'الانتهاء')}</p><p className="font-semibold">{viewProduct.expiry_date}</p></div>}
+                <div className="bg-gym-gold/5 rounded p-3"><p className="text-gym-gold/60 text-xs">{tr('Statut', 'الحالة')}</p><div className="mt-1">{statusBadge(productStatus(viewProduct.current_stock, viewProduct.min_stock_level))}</div></div>
               </div>
               {viewProduct.barcode && (
                 <div className="bg-white rounded p-3 flex flex-col items-center">
                   <Barcode value={viewProduct.barcode} />
                   <Button size="sm" variant="ghost" onClick={() => printBarcodes([{ name: viewProduct.name, barcode: viewProduct.barcode! }])} className="mt-2 text-gym-black hover:bg-gym-gold/10">
-                    <Printer className="w-4 h-4 mr-2" />Print
+                    <Printer className="w-4 h-4 me-2" />{tr('Imprimer', 'طباعة')}
                   </Button>
                 </div>
               )}
@@ -287,12 +288,12 @@ export const Products: React.FC = () => {
       <AlertDialog open={toDelete !== null} onOpenChange={(o) => !o && setToDelete(null)}>
         <AlertDialogContent className="bg-gym-gray border-gym-gold/20 text-gym-gold">
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete {toDelete?.name}?</AlertDialogTitle>
-            <AlertDialogDescription className="text-gym-gold/60">This cannot be undone.</AlertDialogDescription>
+            <AlertDialogTitle>{tr('Supprimer', 'حذف')} {toDelete?.name} ?</AlertDialogTitle>
+            <AlertDialogDescription className="text-gym-gold/60">{tr('Cette action est irréversible.', 'لا يمكن التراجع عن هذا الإجراء.')}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="bg-transparent border-gym-gold/30 text-gym-gold hover:bg-gym-gold/10">Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete} className="bg-red-600 text-white hover:bg-red-700">Delete</AlertDialogAction>
+            <AlertDialogCancel className="bg-transparent border-gym-gold/30 text-gym-gold hover:bg-gym-gold/10">{tr('Annuler', 'إلغاء')}</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-red-600 text-white hover:bg-red-700">{tr('Supprimer', 'حذف')}</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
