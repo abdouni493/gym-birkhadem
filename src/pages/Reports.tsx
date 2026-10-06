@@ -171,13 +171,13 @@ export const Reports: React.FC = () => {
   // ---- Step 1: period picker -------------------------------------------------
   if (!data) {
     return (
-      <div className="min-h-screen bg-gym-black text-gym-gold p-6">
+      <div className="min-h-screen bg-gym-black text-gym-gold p-0 md:p-2">
         <div className="max-w-2xl mx-auto pt-8 space-y-6 animate-fade-in">
           <div className="text-center space-y-3">
             <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-gym-gold to-amber-600 mx-auto flex items-center justify-center shadow-lg shadow-gym-gold/20">
               <BarChart3 className="w-8 h-8 text-gym-black" />
             </div>
-            <h1 className="text-3xl font-bold gradient-text">{tr('Rapports', 'التقارير')}</h1>
+            <h1 className="text-2xl md:text-3xl font-bold gradient-text">{tr('Rapports', 'التقارير')}</h1>
             <p className="text-gym-gold/60">{tr('Choisissez la période à analyser puis générez le rapport.', 'اختر الفترة المراد تحليلها ثم أنشئ التقرير.')}</p>
           </div>
 
@@ -255,12 +255,12 @@ export const Reports: React.FC = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gym-black text-gym-gold p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="min-h-screen bg-gym-black text-gym-gold p-0 md:p-2">
+      <div className="max-w-7xl mx-auto space-y-4 md:space-y-6">
         {/* Header */}
-        <div className="rounded-2xl border border-gym-gold/20 bg-gradient-to-br from-gym-gold/15 via-gym-gray to-gym-black p-6 flex flex-wrap items-center justify-between gap-4">
+        <div className="rounded-2xl border border-gym-gold/20 bg-gradient-to-br from-gym-gold/15 via-gym-gray to-gym-black p-4 md:p-6 flex flex-wrap items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold gradient-text flex items-center gap-2"><BarChart3 className="w-7 h-7 text-gym-gold" />{tr('Rapport', 'التقرير')}</h1>
+            <h1 className="text-2xl md:text-3xl font-bold gradient-text flex items-center gap-2"><BarChart3 className="w-7 h-7 text-gym-gold" />{tr('Rapport', 'التقرير')}</h1>
             <p className="text-gym-gold/70 mt-1 flex items-center gap-2"><CalendarRange className="w-4 h-4" />{fmtDate(data.range.from)} → {fmtDate(data.range.to)}</p>
           </div>
           <div className="flex gap-2 print:hidden">
@@ -288,7 +288,7 @@ export const Reports: React.FC = () => {
         </div>
 
         {/* Section filter */}
-        <div className="flex flex-wrap gap-2 print:hidden sticky top-0 z-10 bg-gym-black/90 backdrop-blur py-2">
+        <div className="flex flex-wrap gap-2 print:hidden sticky top-14 md:top-16 z-20 bg-gym-black/90 backdrop-blur py-2">
           {sections.filter((s) => s.show).map((s) => (
             <button key={s.key} onClick={() => { setSection(s.key); setSearch(''); }}
                     className={cn('inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm border transition-all',

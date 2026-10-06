@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth, usePermissions } from '@/contexts/AuthContext';
 import { useLang } from '@/hooks/useLang';
-import { Bell, LogOut, MonitorSmartphone, Languages } from 'lucide-react';
+import { Bell, LogOut, MonitorSmartphone, Languages, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { launchCustomerDisplay } from '@/lib/customerDisplay';
 import { cn } from '@/lib/utils';
@@ -13,26 +13,31 @@ const LANGS: { code: Language; label: string; short: string }[] = [
   { code: 'ar', label: 'العربية', short: 'ع' },
 ];
 
-export const Header: React.FC = () => {
+export const Header: React.FC<{ onMenuClick: () => void }> = ({ onMenuClick }) => {
   const { user, logout } = useAuth();
   const { canView } = usePermissions();
   const { t, tr, language, setLanguage, locale } = useLang();
   const navigate = useNavigate();
 
   return (
-    <header className="bg-gym-gray border-b border-gym-gold/20 px-6 py-3">
-      <div className="flex items-center justify-between gap-4">
+    <header className="sticky top-0 z-30 bg-gym-gray/95 backdrop-blur border-b border-gym-gold/20 px-2 sm:px-4 md:px-6 py-2 md:py-3">
+      <div className="flex items-center justify-between gap-2 md:gap-4">
+        {/* Mobile: open the sidebar */}
+        <button onClick={onMenuClick} className="md:hidden p-2 rounded-lg bg-gym-gold/10 hover:bg-gym-gold/20 text-gym-gold"
+                aria-label={tr('Ouvrir le menu', 'فتح القائمة')}>
+          <Menu className="w-5 h-5" />
+        </button>
         <p className="text-sm text-gym-gold/60 hidden md:block">
           {new Date().toLocaleDateString(locale, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
         </p>
 
-        <div className="flex items-center gap-3 ms-auto">
+        <div className="flex items-center gap-1 sm:gap-3 ms-auto">
           {/* Language switcher */}
           <div className="flex items-center gap-1 rounded-xl border border-gym-gold/25 bg-gym-black/50 p-1" title={tr('Langue', 'اللغة')}>
-            <Languages className="w-4 h-4 text-gym-gold/50 mx-1" />
+            <Languages className="hidden sm:block w-4 h-4 text-gym-gold/50 mx-1" />
             {LANGS.map((l) => (
               <button key={l.code} onClick={() => setLanguage(l.code)}
-                      className={cn('px-3 py-1 rounded-lg text-sm font-semibold transition-all',
+                      className={cn('px-2 sm:px-3 py-1 rounded-lg text-sm font-semibold transition-all',
                         language === l.code ? 'bg-gym-gold text-gym-black shadow' : 'text-gym-gold/70 hover:bg-gym-gold/10')}
                       aria-pressed={language === l.code}>
                 <span className="hidden sm:inline">{l.label}</span>
@@ -43,7 +48,7 @@ export const Header: React.FC = () => {
 
           {/* Customer display (second screen) */}
           <button onClick={() => launchCustomerDisplay(t)} title={t('display.open')}
-                  className="p-2 rounded-lg hover:bg-gym-gold/10 transition-colors">
+                  className="hidden sm:block p-2 rounded-lg hover:bg-gym-gold/10 transition-colors">
             <MonitorSmartphone className="w-5 h-5 text-gym-gold/60" />
           </button>
 
@@ -57,7 +62,7 @@ export const Header: React.FC = () => {
 
           {/* User */}
           <div className="flex items-center gap-3">
-            <div className="text-end">
+            <div className="text-end hidden sm:block">
               <p className="text-sm font-medium text-gym-gold">{user?.firstName} {user?.lastName}</p>
               <p className="text-xs text-gym-gold/60">{user?.roleName}</p>
             </div>

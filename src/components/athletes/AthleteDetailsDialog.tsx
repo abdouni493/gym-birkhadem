@@ -232,7 +232,7 @@ export const AthleteDetailsDialog: React.FC<Props> = ({ isOpen, onClose, athlete
       <Dialog open={isOpen} onOpenChange={(o) => !o && onClose()}>
         <DialogContent className="bg-gym-gray border-gym-gold/25 text-gym-gold-light max-w-4xl max-h-[94vh] overflow-y-auto p-0">
           {/* Header */}
-          <div className="relative bg-gradient-to-br from-gym-gold/25 via-gym-gold/5 to-transparent p-6 pb-4">
+          <div className="relative bg-gradient-to-br from-gym-gold/25 via-gym-gold/5 to-transparent p-4 sm:p-6 pb-4">
             <DialogHeader className="space-y-0">
               <div className="flex flex-col sm:flex-row sm:items-center gap-4">
                 <div className="w-20 h-20 rounded-2xl ring-4 ring-gym-gold/30 bg-gym-black/50 flex items-center justify-center overflow-hidden shrink-0">
@@ -300,7 +300,7 @@ export const AthleteDetailsDialog: React.FC<Props> = ({ isOpen, onClose, athlete
             </div>
           </div>
 
-          <div className="p-6 pt-2">
+          <div className="p-3 sm:p-6 pt-2">
             {loading && subs.length === 0 ? (
               <div className="py-16 flex justify-center"><Loader2 className="w-7 h-7 animate-spin text-gym-gold" /></div>
             ) : (

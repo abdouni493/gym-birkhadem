@@ -173,12 +173,12 @@ export const Expenses: React.FC = () => {
   const resetFilters = () => { setCatFilter(ALL); setUsePeriod(false); setFrom(monthStart()); setTo(today()); };
 
   return (
-    <div className="min-h-screen bg-gym-black text-gym-gold p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="min-h-screen bg-gym-black text-gym-gold p-0 md:p-2">
+      <div className="max-w-7xl mx-auto space-y-4 md:space-y-6">
         {/* Header */}
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h1 className="text-3xl font-bold gradient-text">{tr('Dépenses', 'المصاريف')}</h1>
+            <h1 className="text-2xl md:text-3xl font-bold gradient-text">{tr('Dépenses', 'المصاريف')}</h1>
             <p className="text-gym-gold/60 mt-1">{tr('Suivez tout ce que dépense la salle.', 'تتبع كل ما تنفقه القاعة.')}</p>
           </div>
           <div className="flex flex-wrap gap-2">

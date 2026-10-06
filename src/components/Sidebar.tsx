@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import * as Icons from 'lucide-react';
-import { ChevronLeft, ChevronRight, User } from 'lucide-react';
+import { ChevronLeft, ChevronRight, User, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useLang } from '@/hooks/useLang';
 
@@ -20,12 +20,20 @@ const iconFor = (name: string): React.ComponentType<{ className?: string }> => {
  * whatever the admin ticks in Workers -> Permissions is exactly what shows up
  * here. Admins see everything (PermissionSet.canView short-circuits).
  */
-export const Sidebar: React.FC = () => {
+interface SidebarProps {
+  /** Mobile drawer state (ignored on desktop). */
+  mobileOpen: boolean;
+  onMobileClose: () => void;
+}
+
+export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, onMobileClose }) => {
   const { user, storeSettings, permissions } = useAuth();
   const { tr } = useLang();
   const navigate = useNavigate();
   const location = useLocation();
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [collapsedPref, setIsCollapsed] = useState(false);
+  // The mobile drawer always shows full labels.
+  const isCollapsed = collapsedPref && !mobileOpen;
 
   const gymName = storeSettings?.name || 'GYM';
   const logo = storeSettings?.logo_url;
@@ -37,9 +45,17 @@ export const Sidebar: React.FC = () => {
     .filter((i) => i.path !== null);
 
   return (
+    <>
+    {/* Mobile backdrop */}
+    {mobileOpen && (
+      <div className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm md:hidden" onClick={onMobileClose} aria-hidden />
+    )}
     <div className={cn(
-      'bg-gym-gradient border-r border-gym-gold/20 transition-all duration-300 flex flex-col',
-      isCollapsed ? 'w-16' : 'w-64',
+      'bg-gym-gradient border-e border-gym-gold/20 transition-all duration-300 flex flex-col',
+      // Mobile: off-canvas drawer, completely hidden when closed (no icon rail).
+      'fixed inset-y-0 start-0 z-50 w-72 max-w-[85vw] md:static md:z-auto md:max-w-none md:h-auto',
+      mobileOpen ? 'translate-x-0' : 'ltr:-translate-x-full rtl:translate-x-full md:!translate-x-0',
+      isCollapsed ? 'md:w-16' : 'md:w-64',
     )}>
       {/* Header */}
       <div className="p-4 border-b border-gym-gold/20">
@@ -57,9 +73,13 @@ export const Sidebar: React.FC = () => {
               </div>
             </div>
           )}
+          <button onClick={onMobileClose} className="p-1 rounded-lg hover:bg-gym-gold/10 md:hidden shrink-0"
+                  aria-label={tr('Fermer le menu', 'إغلاق القائمة')}>
+            <X className="w-5 h-5 text-gym-gold" />
+          </button>
           <button
-            onClick={() => setIsCollapsed(!isCollapsed)}
-            className="p-1 rounded-lg hover:bg-gym-gold/10 transition-colors shrink-0"
+            onClick={() => setIsCollapsed(!collapsedPref)}
+            className="hidden md:block p-1 rounded-lg hover:bg-gym-gold/10 transition-colors shrink-0"
             aria-label={isCollapsed ? tr('Déplier le menu', 'توسيع القائمة') : tr('Replier le menu', 'طي القائمة')}
           >
             {isCollapsed ? <ChevronRight className="w-5 h-5 text-gym-gold rtl:rotate-180" /> : <ChevronLeft className="w-5 h-5 text-gym-gold rtl:rotate-180" />}
@@ -76,7 +96,7 @@ export const Sidebar: React.FC = () => {
           return (
             <button
               key={item.key}
-              onClick={() => item.path && navigate(item.path)}
+              onClick={() => { if (item.path) navigate(item.path); onMobileClose(); }}
               title={isCollapsed ? label : undefined}
               className={cn(
                 'w-full flex items-center space-x-3 rtl:space-x-reverse p-3 rounded-lg transition-all duration-300 hover:bg-gym-gold/10 group',
@@ -117,5 +137,6 @@ export const Sidebar: React.FC = () => {
         </div>
       )}
     </div>
+    </>
   );
 };

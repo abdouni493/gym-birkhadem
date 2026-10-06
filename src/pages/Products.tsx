@@ -95,11 +95,11 @@ export const Products: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gym-black text-gym-gold p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="min-h-screen bg-gym-black text-gym-gold p-0 md:p-2">
+      <div className="max-w-7xl mx-auto space-y-4 md:space-y-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h1 className="text-3xl font-bold gradient-text">{tr('Stock', 'المخزون')}</h1>
+            <h1 className="text-2xl md:text-3xl font-bold gradient-text">{tr('Stock', 'المخزون')}</h1>
             <p className="text-gym-gold/60 mt-1">{tr('Produits et inventaire.', 'المنتجات والجرد.')}</p>
           </div>
           {can('products', 'create') && (

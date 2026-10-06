@@ -669,12 +669,12 @@ export const Scanner: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gym-black text-gym-gold p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="min-h-screen bg-gym-black text-gym-gold p-0 md:p-2">
+      <div className="max-w-7xl mx-auto space-y-4 md:space-y-6">
         {/* En-tête */}
         <div className="flex items-center justify-between animate-slide-up">
           <div>
-            <h1 className="text-3xl font-bold gradient-text">{t('pos.barcodeScanner')} &nbsp; - &nbsp; {t('scanner.title')}</h1>
+            <h1 className="text-2xl md:text-3xl font-bold gradient-text">{t('pos.barcodeScanner')} &nbsp; - &nbsp; {t('scanner.title')}</h1>
             <p className="text-gym-gold/60 mt-2">{t('scanner.cardDetails') || 'Scan membership cards and create new cards - GYM'}</p>
           </div>
           <Badge variant="outline" className="bg-blue-500/20 text-blue-400 border-blue-500/30">
@@ -683,7 +683,7 @@ export const Scanner: React.FC = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="bg-gym-gray border border-gym-gold/20">
+          <TabsList className="bg-gym-gray border border-gym-gold/20 flex flex-wrap h-auto">
             <TabsTrigger value="scanner" className="data-[state=active]:bg-gym-gold data-[state=active]:text-gym-black">
               <Scan className="w-4 h-4 me-2" />
               {t('scanner.title')}

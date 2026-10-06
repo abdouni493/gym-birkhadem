@@ -169,10 +169,10 @@ export const Invoices: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gym-black text-gym-gold p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="min-h-screen bg-gym-black text-gym-gold p-0 md:p-2">
+      <div className="max-w-7xl mx-auto space-y-4 md:space-y-6">
         <div>
-          <h1 className="text-3xl font-bold gradient-text">{tr('Ventes', 'المبيعات')}</h1>
+          <h1 className="text-2xl md:text-3xl font-bold gradient-text">{tr('Ventes', 'المبيعات')}</h1>
           <p className="text-gym-gold/60 mt-1">{tr('Factures de vente et dettes.', 'فواتير البيع والديون.')}</p>
         </div>
 

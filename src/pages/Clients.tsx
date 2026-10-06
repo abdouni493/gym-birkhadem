@@ -104,11 +104,11 @@ export const Clients: React.FC = () => {
   }, [historyRows]);
 
   return (
-    <div className="min-h-screen bg-gym-black text-gym-gold p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="min-h-screen bg-gym-black text-gym-gold p-0 md:p-2">
+      <div className="max-w-7xl mx-auto space-y-4 md:space-y-6">
         <div className="flex flex-wrap justify-between items-center gap-3">
           <div>
-            <h1 className="text-3xl font-bold gradient-text">{tr('Clients', 'الزبائن')}</h1>
+            <h1 className="text-2xl md:text-3xl font-bold gradient-text">{tr('Clients', 'الزبائن')}</h1>
             <p className="text-gym-gold/60 mt-1">{tr('Vos clients de la boutique.', 'زبائن المتجر.')}</p>
           </div>
           {can('clients', 'create') && (

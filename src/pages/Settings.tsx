@@ -108,18 +108,18 @@ export const Settings: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gym-black text-gym-gold p-6">
+    <div className="min-h-screen bg-gym-black text-gym-gold p-0 md:p-2">
       <div className="max-w-5xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold gradient-text">{tr('Paramètres', 'الإعدادات')}</h1>
+            <h1 className="text-2xl md:text-3xl font-bold gradient-text">{tr('Paramètres', 'الإعدادات')}</h1>
             <p className="text-gym-gold/60 mt-1">{tr('Salle et compte.', 'القاعة والحساب.')}</p>
           </div>
           <SettingsIcon className="w-8 h-8 text-gym-gold" />
         </div>
 
         <Tabs defaultValue="store" className="w-full">
-          <TabsList className="bg-gym-gray border border-gym-gold/20">
+          <TabsList className="bg-gym-gray border border-gym-gold/20 flex flex-wrap h-auto">
             <TabsTrigger value="store" className="data-[state=active]:bg-gym-gold data-[state=active]:text-gym-black text-gym-gold">
               <Store className="w-4 h-4 me-2" />{tr('Salle', 'القاعة')}
             </TabsTrigger>

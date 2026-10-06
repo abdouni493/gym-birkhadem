@@ -188,12 +188,12 @@ export const Dashboard: React.FC = () => {
   const greet = hour < 12 ? tr('Bonjour', 'صباح الخير') : hour < 18 ? tr('Bon après-midi', 'طاب يومك') : tr('Bonsoir', 'مساء الخير');
 
   return (
-    <div className="min-h-screen bg-gym-black text-gym-gold-light p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="min-h-screen bg-gym-black text-gym-gold-light p-0 md:p-2">
+      <div className="max-w-7xl mx-auto space-y-4 md:space-y-6">
         {/* Hero */}
-        <div className="rounded-3xl border border-gym-gold/20 bg-gradient-to-br from-gym-gold/20 via-gym-gray to-gym-black p-6 flex flex-wrap items-center justify-between gap-4 animate-fade-in">
+        <div className="rounded-2xl md:rounded-3xl border border-gym-gold/20 bg-gradient-to-br from-gym-gold/20 via-gym-gray to-gym-black p-4 md:p-6 flex flex-wrap items-center justify-between gap-4 animate-fade-in">
           <div>
-            <h1 className="text-3xl md:text-4xl font-bold gradient-text">{greet}, {user?.firstName} 💪</h1>
+            <h1 className="text-3xl md:text-2xl md:text-4xl font-bold gradient-text">{greet}, {user?.firstName} 💪</h1>
             <p className="text-gym-gold/60 mt-1">{tr('Voici l’état de votre salle aujourd’hui.', 'إليك حالة قاعتك اليوم.')}</p>
           </div>
           <div className="text-end">

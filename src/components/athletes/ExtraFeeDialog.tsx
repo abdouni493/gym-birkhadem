@@ -245,7 +245,7 @@ export const ExtraFeeDialog: React.FC<Props> = ({ isOpen, onClose, athlete, athl
             <Textarea value={description} onChange={(e) => setDescription(e.target.value)} className="gym-input min-h-[56px]" />
           </div>
 
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             <div className="space-y-1.5">
               <Label>{tr('Quantité', 'الكمية')} *</Label>
               <Input type="number" min="1" step="1" value={quantity} onChange={(e) => setQuantity(e.target.value)} className="gym-input" />

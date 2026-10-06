@@ -226,12 +226,12 @@ export const Athletes: React.FC = () => {
   const showDebtAlert = debtList.length > 0 && !hiddenAlerts.includes('debt');
 
   return (
-    <div className="min-h-screen bg-gym-black text-gym-gold-light p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="min-h-screen bg-gym-black text-gym-gold-light p-0 md:p-2">
+      <div className="max-w-7xl mx-auto space-y-4 md:space-y-6">
         {/* Header */}
         <div className="flex flex-wrap items-center justify-between gap-3 animate-fade-in">
           <div>
-            <h1 className="text-3xl font-bold gradient-text">{tr('Athlètes', 'الرياضيون')}</h1>
+            <h1 className="text-2xl md:text-3xl font-bold gradient-text">{tr('Athlètes', 'الرياضيون')}</h1>
             <p className="text-gym-gold/60 mt-1">{tr('Membres, abonnements, présences et dettes.', 'الأعضاء والاشتراكات والحضور والديون.')}</p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
